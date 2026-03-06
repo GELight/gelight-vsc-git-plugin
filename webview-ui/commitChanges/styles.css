@@ -59,7 +59,10 @@ body {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--vscode-sideBarSectionHeader-foreground, var(--vscode-foreground));
+  color: var(
+    --vscode-sideBarSectionHeader-foreground,
+    var(--vscode-foreground)
+  );
   background-color: var(--vscode-sideBarSectionHeader-background, transparent);
   border-bottom: 1px solid var(--vscode-panel-border, transparent);
   user-select: none;
@@ -96,6 +99,13 @@ body {
 
 .tree-arrow.expanded {
   transform: rotate(90deg);
+}
+
+/* Spacer for file rows to align with directory arrows */
+.tree-arrow-spacer {
+  display: inline-block;
+  width: 14px;
+  flex-shrink: 0;
 }
 
 /* Checkbox */
@@ -167,8 +177,12 @@ body {
 #commit-form {
   flex-shrink: 0;
   padding: 8px;
-  border-top: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
-  background-color: var(--vscode-sideBar-background, var(--vscode-editor-background));
+  border-top: 1px solid
+    var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+  background-color: var(
+    --vscode-sideBar-background,
+    var(--vscode-editor-background)
+  );
 }
 
 /* Amend row */
@@ -280,7 +294,8 @@ button.icon-btn:hover {
   min-width: 400px;
   min-height: 300px;
   background-color: var(--vscode-editor-background);
-  border: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, #555));
+  border: 1px solid
+    var(--vscode-panel-border, var(--vscode-widget-border, #555));
   border-radius: 6px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   display: flex;
@@ -296,7 +311,10 @@ button.icon-btn:hover {
   align-items: center;
   padding: 8px 12px;
   border-bottom: 1px solid var(--vscode-panel-border, transparent);
-  background-color: var(--vscode-titleBar-activeBackground, var(--vscode-editor-background));
+  background-color: var(
+    --vscode-titleBar-activeBackground,
+    var(--vscode-editor-background)
+  );
   cursor: move;
   flex-shrink: 0;
 }

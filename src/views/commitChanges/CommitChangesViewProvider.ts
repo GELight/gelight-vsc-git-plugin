@@ -2,15 +2,16 @@
  * CommitChangesViewProvider — WebviewViewProvider for the Commit Changes panel.
  * Shows changed files, commit form, amend toggle, push buttons.
  */
-import * as vscode from 'vscode';
-import { GitService } from '../../git/gitService';
-import { GitCliService } from '../../git/gitCliService';
-import { GitWatcher } from '../../git/gitWatcher';
-import { getNonce, getWebviewUri } from '../../utils/helpers';
-import { GitFileChange, WebviewToExtensionMessage } from '../../git/gitTypes';
+import * as vscode from "vscode";
+import * as path from "path";
+import { GitService } from "../../git/gitService";
+import { GitCliService } from "../../git/gitCliService";
+import { GitWatcher } from "../../git/gitWatcher";
+import { getNonce, getWebviewUri } from "../../utils/helpers";
+import { GitFileChange, WebviewToExtensionMessage } from "../../git/gitTypes";
 
 export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'gelightCommitChanges';
+  public static readonly viewType = "gelightCommitChanges";
 
   private _view?: vscode.WebviewView;
   private _disposables: vscode.Disposable[] = [];
@@ -21,7 +22,7 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
     private readonly _gitWatcher: GitWatcher,
   ) {
     this._disposables.push(
-      this._gitWatcher.onDidChange(() => this._updateChanges())
+      this._gitWatcher.onDidChange(() => this._updateChanges()),
     );
   }
 
@@ -56,14 +57,16 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
    * Send current file changes to the webview.
    */
   public async _updateChanges(): Promise<void> {
-    if (!this._view?.visible) { return; }
+    if (!this._view?.visible) {
+      return;
+    }
 
     const staged = this._gitService.getIndexChanges();
     const unstaged = this._gitService.getWorkingTreeChanges();
     const untracked = this._gitService.getUntrackedFiles();
 
     this._view.webview.postMessage({
-      type: 'updateChanges',
+      type: "updateChanges",
       staged,
       unstaged,
       untracked,
@@ -72,48 +75,56 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
 
   private async _handleMessage(msg: WebviewToExtensionMessage): Promise<void> {
     switch (msg.type) {
-      case 'ready':
+      case "ready":
         await this._sendLocalizedStrings();
         await this._updateChanges();
         break;
 
-      case 'commit':
+      case "commit":
         await this._handleCommit(msg.message, msg.amend, msg.files);
         break;
 
-      case 'push':
+      case "push":
         await this._handlePush();
         break;
 
-      case 'forcePush':
+      case "forcePush":
         await this._handleForcePush();
         break;
 
-      case 'stageFiles':
+      case "stageFiles":
         await this._handleStageFiles(msg.paths);
         break;
 
-      case 'unstageFiles':
+      case "unstageFiles":
         await this._handleUnstageFiles(msg.paths);
         break;
 
-      case 'toggleAmend':
+      case "toggleAmend":
         await this._handleAmendToggle(msg.enabled);
         break;
 
-      case 'openCommitOverview':
+      case "openCommitOverview":
         await this._handleOpenCommitOverview();
         break;
 
-      case 'requestRefresh':
+      case "openFile":
+        await this._handleOpenFile(msg.path, msg.status);
+        break;
+
+      case "requestRefresh":
         await this._updateChanges();
         break;
     }
   }
 
-  private async _handleCommit(message: string, amend: boolean, files: string[]): Promise<void> {
+  private async _handleCommit(
+    message: string,
+    amend: boolean,
+    files: string[],
+  ): Promise<void> {
     if (!message.trim() && !amend) {
-      vscode.window.showWarningMessage('Commit message cannot be empty.');
+      vscode.window.showWarningMessage("Commit message cannot be empty.");
       return;
     }
 
@@ -128,16 +139,16 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
 
       // Clear the commit message in webview
       this._view?.webview.postMessage({
-        type: 'operationComplete',
-        operation: 'commit',
+        type: "operationComplete",
+        operation: "commit",
         success: true,
       });
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       vscode.window.showErrorMessage(`Commit failed: ${errorMsg}`);
       this._view?.webview.postMessage({
-        type: 'operationComplete',
-        operation: 'commit',
+        type: "operationComplete",
+        operation: "commit",
         success: false,
         error: errorMsg,
       });
@@ -147,12 +158,12 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
   private async _handlePush(): Promise<void> {
     try {
       await vscode.window.withProgress(
-        { location: vscode.ProgressLocation.Notification, title: 'Pushing...' },
+        { location: vscode.ProgressLocation.Notification, title: "Pushing..." },
         async () => {
           await this._gitService.push();
-        }
+        },
       );
-      vscode.window.showInformationMessage('Push successful.');
+      vscode.window.showInformationMessage("Push successful.");
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       vscode.window.showErrorMessage(`Push failed: ${errorMsg}`);
@@ -161,21 +172,28 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
 
   private async _handleForcePush(): Promise<void> {
     const confirm = await vscode.window.showWarningMessage(
-      vscode.l10n.t('Are you sure you want to force push? This can overwrite remote changes.'),
+      vscode.l10n.t(
+        "Are you sure you want to force push? This can overwrite remote changes.",
+      ),
       { modal: true },
-      'Force Push',
+      "Force Push",
     );
 
-    if (!confirm) { return; }
+    if (!confirm) {
+      return;
+    }
 
     try {
       await vscode.window.withProgress(
-        { location: vscode.ProgressLocation.Notification, title: 'Force pushing...' },
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: "Force pushing...",
+        },
         async () => {
           await this._gitService.forcePush();
-        }
+        },
       );
-      vscode.window.showInformationMessage('Force push successful.');
+      vscode.window.showInformationMessage("Force push successful.");
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       vscode.window.showErrorMessage(`Force push failed: ${errorMsg}`);
@@ -206,7 +224,7 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
     if (enabled) {
       const headMessage = await this._gitService.getHeadCommitMessage();
       this._view?.webview.postMessage({
-        type: 'updateHeadMessage',
+        type: "updateHeadMessage",
         message: headMessage,
       });
     }
@@ -218,42 +236,91 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
     // We reuse the updateCommits message type — the webview handles
     // routing it to the modal when in overview mode
     this._view?.webview.postMessage({
-      type: 'updateCommits',
-      commits: commits.map(c => ({
+      type: "updateCommits",
+      commits: commits.map((c) => ({
         commit: c,
         column: 0,
-        color: '#569CD6',
+        color: "#569CD6",
         lines: [],
       })),
     });
   }
 
+  /**
+   * Open a file from the changes tree. Shows a side-by-side diff for modified files.
+   */
+  private async _handleOpenFile(
+    filePath: string,
+    status: string,
+  ): Promise<void> {
+    const repoPath = this._gitService.getRepoPath();
+    if (!repoPath) {
+      return;
+    }
+
+    const fileUri = vscode.Uri.file(path.join(repoPath, filePath));
+
+    if (status === "D") {
+      // Deleted file — show the HEAD version
+      const gitUri = fileUri.with({
+        scheme: "git",
+        query: JSON.stringify({ path: fileUri.fsPath, ref: "~" }),
+      });
+      await vscode.commands.executeCommand("vscode.open", gitUri);
+    } else if (status === "M") {
+      // Modified file — show side-by-side diff (HEAD vs working tree)
+      const gitUri = fileUri.with({
+        scheme: "git",
+        query: JSON.stringify({ path: fileUri.fsPath, ref: "~" }),
+      });
+      await vscode.commands.executeCommand(
+        "vscode.diff",
+        gitUri,
+        fileUri,
+        `${filePath} (Working Tree Changes)`,
+      );
+    } else {
+      // Added / Untracked / other — just open the file
+      await vscode.commands.executeCommand("vscode.open", fileUri);
+    }
+  }
+
   private async _sendLocalizedStrings(): Promise<void> {
-    if (!this._view) { return; }
+    if (!this._view) {
+      return;
+    }
     this._view.webview.postMessage({
-      type: 'setStrings',
+      type: "setStrings",
       strings: {
-        changes: vscode.l10n.t('Changes'),
-        untrackedFiles: vscode.l10n.t('Untracked Files'),
-        amend: vscode.l10n.t('Amend'),
-        commitMessagePlaceholder: vscode.l10n.t('Enter commit message...'),
-        commit: vscode.l10n.t('Commit'),
-        push: vscode.l10n.t('Push'),
-        forcePush: vscode.l10n.t('Force Push'),
-        noChanges: vscode.l10n.t('No changes'),
-        search: vscode.l10n.t('Search...'),
-        selectAll: vscode.l10n.t('Select all'),
-        deselectAll: vscode.l10n.t('Deselect all'),
-        commitOverview: vscode.l10n.t('Commit Overview'),
-        changedFiles: vscode.l10n.t('Changed Files'),
+        changes: vscode.l10n.t("Changes"),
+        untrackedFiles: vscode.l10n.t("Untracked Files"),
+        amend: vscode.l10n.t("Amend"),
+        commitMessagePlaceholder: vscode.l10n.t("Enter commit message..."),
+        commit: vscode.l10n.t("Commit"),
+        push: vscode.l10n.t("Push"),
+        forcePush: vscode.l10n.t("Force Push"),
+        noChanges: vscode.l10n.t("No changes"),
+        search: vscode.l10n.t("Search..."),
+        selectAll: vscode.l10n.t("Select all"),
+        deselectAll: vscode.l10n.t("Deselect all"),
+        commitOverview: vscode.l10n.t("Commit Overview"),
+        changedFiles: vscode.l10n.t("Changed Files"),
       },
     });
   }
 
   private _getHtml(webview: vscode.Webview): string {
     const nonce = getNonce();
-    const scriptUri = getWebviewUri(webview, this._extensionUri, ['dist', 'webview-ui', 'commitChanges.js']);
-    const styleUri = getWebviewUri(webview, this._extensionUri, ['webview-ui', 'commitChanges', 'styles.css']);
+    const scriptUri = getWebviewUri(webview, this._extensionUri, [
+      "dist",
+      "webview-ui",
+      "commitChanges.js",
+    ]);
+    const styleUri = getWebviewUri(webview, this._extensionUri, [
+      "dist",
+      "webview-ui",
+      "commitChanges.css",
+    ]);
 
     return /*html*/ `<!DOCTYPE html>
 <html lang="en">
@@ -309,6 +376,6 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
   }
 
   dispose(): void {
-    this._disposables.forEach(d => d.dispose());
+    this._disposables.forEach((d) => d.dispose());
   }
 }

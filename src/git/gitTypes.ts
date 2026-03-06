@@ -28,12 +28,12 @@ export interface GitCommit {
 
 /** Status of a changed file. */
 export enum FileChangeStatus {
-  Modified = 'M',
-  Added = 'A',
-  Deleted = 'D',
-  Renamed = 'R',
-  Copied = 'C',
-  Untracked = '?',
+  Modified = "M",
+  Added = "A",
+  Deleted = "D",
+  Renamed = "R",
+  Copied = "C",
+  Untracked = "?",
 }
 
 /** A file change in the working tree or index. */
@@ -91,34 +91,45 @@ export interface GraphLine {
   /** Color of this line */
   color: string;
   /** Line type: 'straight' | 'merge-left' | 'merge-right' | 'fork-left' | 'fork-right' */
-  type: 'straight' | 'merge-left' | 'merge-right' | 'fork-left' | 'fork-right';
+  type: "straight" | "merge-left" | "merge-right" | "fork-left" | "fork-right";
 }
 
 // --- Message types for extension <-> webview communication ---
 
 /** Messages from Extension Host to Webview */
 export type ExtensionToWebviewMessage =
-  | { type: 'updateCommits'; commits: GraphRow[] }
-  | { type: 'updateCommitDetails'; commit: GitCommit; files: GitFileChange[] }
-  | { type: 'updateChanges'; staged: GitFileChange[]; unstaged: GitFileChange[]; untracked: GitFileChange[] }
-  | { type: 'updateHeadMessage'; message: string }
-  | { type: 'operationComplete'; operation: string; success: boolean; error?: string }
-  | { type: 'setStrings'; strings: Record<string, string> }
-  | { type: 'clearSelection' };
+  | { type: "updateCommits"; commits: GraphRow[] }
+  | { type: "updateCommitDetails"; commit: GitCommit; files: GitFileChange[] }
+  | {
+      type: "updateChanges";
+      staged: GitFileChange[];
+      unstaged: GitFileChange[];
+      untracked: GitFileChange[];
+    }
+  | { type: "updateHeadMessage"; message: string }
+  | {
+      type: "operationComplete";
+      operation: string;
+      success: boolean;
+      error?: string;
+    }
+  | { type: "setStrings"; strings: Record<string, string> }
+  | { type: "clearSelection" };
 
 /** Messages from Webview to Extension Host */
 export type WebviewToExtensionMessage =
-  | { type: 'ready' }
-  | { type: 'selectCommit'; hash: string }
-  | { type: 'copyHash'; hash: string }
-  | { type: 'requestCommitDetails'; hash: string }
-  | { type: 'commit'; message: string; amend: boolean; files: string[] }
-  | { type: 'push' }
-  | { type: 'forcePush' }
-  | { type: 'stageFiles'; paths: string[] }
-  | { type: 'unstageFiles'; paths: string[] }
-  | { type: 'toggleAmend'; enabled: boolean }
-  | { type: 'openCommitOverview' }
-  | { type: 'searchCommits'; query: string }
-  | { type: 'searchFiles'; query: string }
-  | { type: 'requestRefresh' };
+  | { type: "ready" }
+  | { type: "selectCommit"; hash: string }
+  | { type: "copyHash"; hash: string }
+  | { type: "requestCommitDetails"; hash: string }
+  | { type: "commit"; message: string; amend: boolean; files: string[] }
+  | { type: "push" }
+  | { type: "forcePush" }
+  | { type: "stageFiles"; paths: string[] }
+  | { type: "unstageFiles"; paths: string[] }
+  | { type: "toggleAmend"; enabled: boolean }
+  | { type: "openCommitOverview" }
+  | { type: "searchCommits"; query: string }
+  | { type: "searchFiles"; query: string }
+  | { type: "openFile"; path: string; status: string }
+  | { type: "requestRefresh" };

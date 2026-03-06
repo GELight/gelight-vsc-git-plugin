@@ -2,16 +2,16 @@
  * GitGraphViewProvider — WebviewViewProvider for the Git Graph panel.
  * Renders the commit graph visualization and handles user interactions.
  */
-import * as vscode from 'vscode';
-import { GitService } from '../../git/gitService';
-import { GitCliService } from '../../git/gitCliService';
-import { GitWatcher } from '../../git/gitWatcher';
-import { calculateGraphLayout } from '../../git/graphLayout';
-import { getNonce, getWebviewUri } from '../../utils/helpers';
-import { WebviewToExtensionMessage } from '../../git/gitTypes';
+import * as vscode from "vscode";
+import { GitService } from "../../git/gitService";
+import { GitCliService } from "../../git/gitCliService";
+import { GitWatcher } from "../../git/gitWatcher";
+import { calculateGraphLayout } from "../../git/graphLayout";
+import { getNonce, getWebviewUri } from "../../utils/helpers";
+import { WebviewToExtensionMessage } from "../../git/gitTypes";
 
 export class GitGraphViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'gelightGitGraph';
+  public static readonly viewType = "gelightGitGraph";
 
   private _view?: vscode.WebviewView;
   private _disposables: vscode.Disposable[] = [];
@@ -23,7 +23,7 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
   ) {
     // Listen for git changes and push updates
     this._disposables.push(
-      this._gitWatcher.onDidChange(() => this._updateGraph())
+      this._gitWatcher.onDidChange(() => this._updateGraph()),
     );
   }
 
@@ -60,38 +60,42 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
    * Refresh the graph data and send to webview.
    */
   public async _updateGraph(): Promise<void> {
-    if (!this._view?.visible) { return; }
+    if (!this._view?.visible) {
+      return;
+    }
 
     const commits = await this._gitService.getLog();
     const graphRows = calculateGraphLayout(commits);
 
     this._view.webview.postMessage({
-      type: 'updateCommits',
+      type: "updateCommits",
       commits: graphRows,
     });
   }
 
   private async _handleMessage(msg: WebviewToExtensionMessage): Promise<void> {
     switch (msg.type) {
-      case 'ready':
+      case "ready":
         await this._sendLocalizedStrings();
         await this._updateGraph();
         break;
 
-      case 'requestCommitDetails':
+      case "requestCommitDetails":
         await this._sendCommitDetails(msg.hash);
         break;
 
-      case 'copyHash':
+      case "copyHash":
         await vscode.env.clipboard.writeText(msg.hash);
-        vscode.window.showInformationMessage(`Copied: ${msg.hash.substring(0, 7)}`);
+        vscode.window.showInformationMessage(
+          `Copied: ${msg.hash.substring(0, 7)}`,
+        );
         break;
 
-      case 'requestRefresh':
+      case "requestRefresh":
         await this._updateGraph();
         break;
 
-      case 'searchCommits':
+      case "searchCommits":
         // Client-side filtering — commits are already in webview
         break;
     }
@@ -101,7 +105,7 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
     const details = await this._gitService.getCommitDetails(hash);
     if (details && this._view) {
       this._view.webview.postMessage({
-        type: 'updateCommitDetails',
+        type: "updateCommitDetails",
         commit: details.commit,
         files: details.files,
       });
@@ -109,18 +113,20 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
   }
 
   private async _sendLocalizedStrings(): Promise<void> {
-    if (!this._view) { return; }
+    if (!this._view) {
+      return;
+    }
     this._view.webview.postMessage({
-      type: 'setStrings',
+      type: "setStrings",
       strings: {
-        search: vscode.l10n.t('Search...'),
-        noCommits: vscode.l10n.t('No commits found'),
-        author: vscode.l10n.t('Author'),
-        date: vscode.l10n.t('Date'),
-        parents: vscode.l10n.t('Parents'),
-        changedFiles: vscode.l10n.t('Changed Files'),
-        tags: vscode.l10n.t('Tags'),
-        commitDetails: vscode.l10n.t('Commit Details'),
+        search: vscode.l10n.t("Search..."),
+        noCommits: vscode.l10n.t("No commits found"),
+        author: vscode.l10n.t("Author"),
+        date: vscode.l10n.t("Date"),
+        parents: vscode.l10n.t("Parents"),
+        changedFiles: vscode.l10n.t("Changed Files"),
+        tags: vscode.l10n.t("Tags"),
+        commitDetails: vscode.l10n.t("Commit Details"),
       },
     });
   }
@@ -130,21 +136,29 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
    */
   public async handleEditCommitMessage(commitHash: string): Promise<void> {
     const details = await this._gitService.getCommitDetails(commitHash);
-    const currentMessage = details?.commit.fullMessage ?? '';
+    const currentMessage = details?.commit.fullMessage ?? "";
 
     const newMessage = await vscode.window.showInputBox({
-      prompt: vscode.l10n.t('Enter new commit message'),
+      prompt: vscode.l10n.t("Enter new commit message"),
       value: currentMessage,
-      validateInput: (value) => value.trim() ? null : 'Message cannot be empty',
+      validateInput: (value) =>
+        value.trim() ? null : "Message cannot be empty",
     });
 
-    if (newMessage === undefined) { return; }
+    if (newMessage === undefined) {
+      return;
+    }
 
     const repoPath = this._gitService.getRepoPath();
-    if (!repoPath) { return; }
+    if (!repoPath) {
+      return;
+    }
 
     await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Git operation in progress...') },
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: vscode.l10n.t("Git operation in progress..."),
+      },
       async () => {
         const cli = new GitCliService(repoPath);
         try {
@@ -152,26 +166,37 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
           this._gitWatcher.forceUpdate();
         } catch (err: unknown) {
           const errorMsg = err instanceof Error ? err.message : String(err);
-          vscode.window.showErrorMessage(`Failed to edit commit message: ${errorMsg}`);
+          vscode.window.showErrorMessage(
+            `Failed to edit commit message: ${errorMsg}`,
+          );
         }
-      }
+      },
     );
   }
 
   public async handleDeleteCommit(commitHash: string): Promise<void> {
     const confirm = await vscode.window.showWarningMessage(
-      vscode.l10n.t('Are you sure you want to delete this commit? This will rewrite history.'),
+      vscode.l10n.t(
+        "Are you sure you want to delete this commit? This will rewrite history.",
+      ),
       { modal: true },
-      vscode.l10n.t('Delete commit'),
+      vscode.l10n.t("Delete commit"),
     );
 
-    if (!confirm) { return; }
+    if (!confirm) {
+      return;
+    }
 
     const repoPath = this._gitService.getRepoPath();
-    if (!repoPath) { return; }
+    if (!repoPath) {
+      return;
+    }
 
     await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Git operation in progress...') },
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: vscode.l10n.t("Git operation in progress..."),
+      },
       async () => {
         const cli = new GitCliService(repoPath);
         try {
@@ -179,18 +204,25 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
           this._gitWatcher.forceUpdate();
         } catch (err: unknown) {
           const errorMsg = err instanceof Error ? err.message : String(err);
-          vscode.window.showErrorMessage(`Failed to delete commit: ${errorMsg}`);
+          vscode.window.showErrorMessage(
+            `Failed to delete commit: ${errorMsg}`,
+          );
         }
-      }
+      },
     );
   }
 
   public async handleResetToCommit(commitHash: string): Promise<void> {
     const repoPath = this._gitService.getRepoPath();
-    if (!repoPath) { return; }
+    if (!repoPath) {
+      return;
+    }
 
     await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Git operation in progress...') },
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: vscode.l10n.t("Git operation in progress..."),
+      },
       async () => {
         const cli = new GitCliService(repoPath);
         try {
@@ -200,16 +232,21 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
           const errorMsg = err instanceof Error ? err.message : String(err);
           vscode.window.showErrorMessage(`Failed to reset: ${errorMsg}`);
         }
-      }
+      },
     );
   }
 
   public async handleFixup(commitHashes: string[]): Promise<void> {
     const repoPath = this._gitService.getRepoPath();
-    if (!repoPath || commitHashes.length < 2) { return; }
+    if (!repoPath || commitHashes.length < 2) {
+      return;
+    }
 
     await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Git operation in progress...') },
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: vscode.l10n.t("Git operation in progress..."),
+      },
       async () => {
         const cli = new GitCliService(repoPath);
         try {
@@ -219,23 +256,30 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
           const errorMsg = err instanceof Error ? err.message : String(err);
           vscode.window.showErrorMessage(`Fixup failed: ${errorMsg}`);
         }
-      }
+      },
     );
   }
 
   public async handleSquash(commitHashes: string[]): Promise<void> {
     const repoPath = this._gitService.getRepoPath();
-    if (!repoPath || commitHashes.length < 2) { return; }
+    if (!repoPath || commitHashes.length < 2) {
+      return;
+    }
 
     const message = await vscode.window.showInputBox({
-      prompt: vscode.l10n.t('Enter squash commit message'),
-      placeHolder: 'Squash commit message',
+      prompt: vscode.l10n.t("Enter squash commit message"),
+      placeHolder: "Squash commit message",
     });
 
-    if (message === undefined) { return; }
+    if (message === undefined) {
+      return;
+    }
 
     await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Git operation in progress...') },
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: vscode.l10n.t("Git operation in progress..."),
+      },
       async () => {
         const cli = new GitCliService(repoPath);
         try {
@@ -245,19 +289,24 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
           const errorMsg = err instanceof Error ? err.message : String(err);
           vscode.window.showErrorMessage(`Squash failed: ${errorMsg}`);
         }
-      }
+      },
     );
   }
 
   public async handleSoftResetMultiple(commitHashes: string[]): Promise<void> {
     const repoPath = this._gitService.getRepoPath();
-    if (!repoPath || commitHashes.length === 0) { return; }
+    if (!repoPath || commitHashes.length === 0) {
+      return;
+    }
 
     // Soft reset to the parent of the oldest selected commit
     const oldestHash = commitHashes[commitHashes.length - 1];
 
     await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Git operation in progress...') },
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: vscode.l10n.t("Git operation in progress..."),
+      },
       async () => {
         const cli = new GitCliService(repoPath);
         try {
@@ -267,16 +316,24 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
           const errorMsg = err instanceof Error ? err.message : String(err);
           vscode.window.showErrorMessage(`Soft reset failed: ${errorMsg}`);
         }
-      }
+      },
     );
   }
 
-  public async handleSoftResetFileFromCommit(commitHash: string, filePath: string): Promise<void> {
+  public async handleSoftResetFileFromCommit(
+    commitHash: string,
+    filePath: string,
+  ): Promise<void> {
     const repoPath = this._gitService.getRepoPath();
-    if (!repoPath) { return; }
+    if (!repoPath) {
+      return;
+    }
 
     await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Git operation in progress...') },
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: vscode.l10n.t("Git operation in progress..."),
+      },
       async () => {
         const cli = new GitCliService(repoPath);
         try {
@@ -284,9 +341,11 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
           this._gitWatcher.forceUpdate();
         } catch (err: unknown) {
           const errorMsg = err instanceof Error ? err.message : String(err);
-          vscode.window.showErrorMessage(`Failed to reset file from commit: ${errorMsg}`);
+          vscode.window.showErrorMessage(
+            `Failed to reset file from commit: ${errorMsg}`,
+          );
         }
-      }
+      },
     );
   }
 
@@ -294,13 +353,21 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
    * Clear the current selection in the webview.
    */
   public clearSelection(): void {
-    this._view?.webview.postMessage({ type: 'clearSelection' });
+    this._view?.webview.postMessage({ type: "clearSelection" });
   }
 
   private _getHtml(webview: vscode.Webview): string {
     const nonce = getNonce();
-    const scriptUri = getWebviewUri(webview, this._extensionUri, ['dist', 'webview-ui', 'gitGraph.js']);
-    const styleUri = getWebviewUri(webview, this._extensionUri, ['webview-ui', 'gitGraph', 'styles.css']);
+    const scriptUri = getWebviewUri(webview, this._extensionUri, [
+      "dist",
+      "webview-ui",
+      "gitGraph.js",
+    ]);
+    const styleUri = getWebviewUri(webview, this._extensionUri, [
+      "dist",
+      "webview-ui",
+      "gitGraph.css",
+    ]);
 
     return /*html*/ `<!DOCTYPE html>
 <html lang="en">
@@ -328,6 +395,6 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
   }
 
   dispose(): void {
-    this._disposables.forEach(d => d.dispose());
+    this._disposables.forEach((d) => d.dispose());
   }
 }
