@@ -28,5 +28,7 @@
   "selectAll": "Select all",
   "deselectAll": "Deselect all",
   "commitDetails": "Commit Details",
+  "copyCommitMessage": "Copy commit message",
+  "commitMessageCopied": "Commit message copied",
   "refresh": "Refresh"
 }

@@ -92,6 +92,13 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
         );
         break;
 
+      case "copyMessage":
+        await vscode.env.clipboard.writeText(msg.message);
+        vscode.window.showInformationMessage(
+          vscode.l10n.t("Commit message copied"),
+        );
+        break;
+
       case "requestRefresh":
         await this._updateGraph();
         break;
@@ -132,6 +139,7 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
         changedFiles: vscode.l10n.t("Changed Files"),
         tags: vscode.l10n.t("Tags"),
         commitDetails: vscode.l10n.t("Commit Details"),
+        copyCommitMessage: vscode.l10n.t("Copy commit message"),
       },
     });
   }

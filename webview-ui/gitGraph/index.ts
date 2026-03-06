@@ -369,6 +369,21 @@ function renderCommitList(): void {
     msgEl.className = "commit-message";
     msgEl.textContent = row.commit.message;
 
+    // Copy message button
+    const copyMsgBtn = document.createElement("button");
+    copyMsgBtn.className = "copy-message-btn";
+    copyMsgBtn.title = strings.copyCommitMessage || "Copy commit message";
+    copyMsgBtn.innerHTML = "&#x2398;";
+    copyMsgBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      vscode.postMessage({
+        type: "copyMessage",
+        message: row.commit.fullMessage || row.commit.message,
+      });
+      copyMsgBtn.classList.add("copied");
+      setTimeout(() => copyMsgBtn.classList.remove("copied"), 1000);
+    });
+
     // Tags
     const tagsContainer = document.createElement("span");
     tagsContainer.className = "commit-tags";
@@ -399,6 +414,7 @@ function renderCommitList(): void {
 
     rowEl.appendChild(hashEl);
     rowEl.appendChild(msgEl);
+    rowEl.appendChild(copyMsgBtn);
     rowEl.appendChild(tagsContainer);
     rowEl.appendChild(authorEl);
     rowEl.appendChild(dateEl);
@@ -518,7 +534,7 @@ function renderDetails(): void {
           : ""
       }
       <div class="detail-field message-field">
-        <span class="detail-label">Message:</span>
+        <span class="detail-label">Message: <button class="copy-message-btn details-copy-msg" id="copy-details-msg" title="${escapeHtml(strings.copyCommitMessage || "Copy commit message")}">&#x2398;</button></span>
         <pre class="detail-value commit-full-message">${escapeHtml(detailsCommit.fullMessage)}</pre>
       </div>
       <div class="detail-section">
@@ -551,6 +567,19 @@ function renderDetails(): void {
   document
     .getElementById("close-details")
     ?.addEventListener("click", hideDetails);
+
+  // Bind copy message button in details
+  document.getElementById("copy-details-msg")?.addEventListener("click", () => {
+    if (detailsCommit) {
+      vscode.postMessage({
+        type: "copyMessage",
+        message: detailsCommit.fullMessage || detailsCommit.message,
+      });
+      const btn = document.getElementById("copy-details-msg");
+      btn?.classList.add("copied");
+      setTimeout(() => btn?.classList.remove("copied"), 1000);
+    }
+  });
 
   // Bind dblclick on file entries to open diff
   const fileEntries = document.querySelectorAll(

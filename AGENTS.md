@@ -7,6 +7,6 @@
 
 - Du testest deine eigenen Implementierungen automatisch.
 
-- Nach jeder Änderung am PlugIn soll eine gepackte Variante generiert werden. Existiert diese bereits, dann soll die alte überschrieben werden.
+- Nach jeder abgeschlossenen Änderung (alle Todos sind abgearbeitet) am PlugIn soll eine gepackte Variante generiert werden.
 
-- Du nutzt Semantic Versioning, um bei jedem Build die Version entsprechend zu aktualisieren
+- Du nutzt Semantic Versioning, um bei jedem Build die Version entsprechend zu aktualisieren. Die älteren Versions-Builds können wieder entfernt werden.

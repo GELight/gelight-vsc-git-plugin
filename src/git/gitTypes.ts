@@ -121,6 +121,7 @@ export type WebviewToExtensionMessage =
   | { type: "ready" }
   | { type: "selectCommit"; hash: string }
   | { type: "copyHash"; hash: string }
+  | { type: "copyMessage"; message: string }
   | { type: "requestCommitDetails"; hash: string }
   | { type: "commit"; message: string; amend: boolean; files: string[] }
   | { type: "push" }

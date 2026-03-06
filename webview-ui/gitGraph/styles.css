@@ -517,6 +517,45 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Copy message button */
+.copy-message-btn {
+  background: none;
+  border: none;
+  color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  line-height: 1;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.commit-row:hover .copy-message-btn {
+  opacity: 1;
+}
+
+.copy-message-btn:hover {
+  background-color: var(--vscode-toolbar-hoverBackground);
+  color: var(--vscode-foreground);
+}
+
+.copy-message-btn.copied {
+  opacity: 1;
+  color: var(--vscode-testing-iconPassed, #4ec9b0);
+}
+
+/* Copy button in details panel */
+.details-copy-msg {
+  opacity: 1;
+  font-size: 13px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
 /* Hidden utility */
 .hidden {
   display: none !important;

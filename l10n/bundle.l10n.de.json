@@ -28,5 +28,7 @@
   "selectAll": "Alle auswählen",
   "deselectAll": "Alle abwählen",
   "commitDetails": "Commit-Details",
+  "copyCommitMessage": "Commit-Nachricht kopieren",
+  "commitMessageCopied": "Commit-Nachricht kopiert",
   "refresh": "Aktualisieren"
 }
