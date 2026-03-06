@@ -1,0 +1,195 @@
+{
+  "name": "gelight-vsc-git-plugin",
+  "displayName": "GELight Git",
+  "description": "A powerful Git integration for Visual Studio Code with Git Graph and Commit Changes panels.",
+  "version": "0.1.0",
+  "publisher": "gelight",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "SCM Providers"
+  ],
+  "extensionDependencies": [
+    "vscode.git"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "gelight-git",
+          "title": "GELight Git",
+          "icon": "media/icons/gelight-git.svg"
+        }
+      ]
+    },
+    "views": {
+      "gelight-git": [
+        {
+          "id": "gelightGitGraph",
+          "name": "Git Graph",
+          "type": "webview"
+        },
+        {
+          "id": "gelightCommitChanges",
+          "name": "Commit Changes",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "gelight.editCommitMessage",
+        "title": "%command.editCommitMessage%",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.deleteCommit",
+        "title": "%command.deleteCommit%",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.resetToCommit",
+        "title": "%command.resetToCommit%",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.fixup",
+        "title": "Fixup",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.squash",
+        "title": "Squash",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.softReset",
+        "title": "Reset (Soft)",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.commit",
+        "title": "%command.commit%",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.push",
+        "title": "Push",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.forcePush",
+        "title": "Force Push",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.copyCommitHash",
+        "title": "%command.copyCommitHash%",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.openCommitOverview",
+        "title": "%command.openCommitOverview%",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.softResetFileFromCommit",
+        "title": "%command.softResetFileFromCommit%",
+        "category": "GELight Git"
+      },
+      {
+        "command": "gelight.refreshGraph",
+        "title": "%command.refreshGraph%",
+        "category": "GELight Git",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "webview/context": [
+        {
+          "command": "gelight.editCommitMessage",
+          "when": "webviewId == 'gelightGitGraph' && webviewSection == 'singleCommit'"
+        },
+        {
+          "command": "gelight.deleteCommit",
+          "when": "webviewId == 'gelightGitGraph' && webviewSection == 'singleCommit'"
+        },
+        {
+          "command": "gelight.resetToCommit",
+          "when": "webviewId == 'gelightGitGraph' && webviewSection == 'singleCommit'"
+        },
+        {
+          "command": "gelight.copyCommitHash",
+          "when": "webviewId == 'gelightGitGraph' && webviewSection == 'singleCommit'"
+        },
+        {
+          "command": "gelight.fixup",
+          "when": "webviewId == 'gelightGitGraph' && webviewSection == 'multiCommit'"
+        },
+        {
+          "command": "gelight.squash",
+          "when": "webviewId == 'gelightGitGraph' && webviewSection == 'multiCommit'"
+        },
+        {
+          "command": "gelight.softReset",
+          "when": "webviewId == 'gelightGitGraph' && webviewSection == 'multiCommit'"
+        },
+        {
+          "command": "gelight.softResetFileFromCommit",
+          "when": "webviewId == 'gelightGitGraph' && webviewSection == 'commitFile'"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "gelight.refreshGraph",
+          "when": "view == gelightGitGraph",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "GELight Git",
+      "properties": {
+        "gelightGit.maxCommits": {
+          "type": "number",
+          "default": 150,
+          "description": "%config.maxCommits%"
+        },
+        "gelightGit.autoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "%config.autoRefresh%"
+        },
+        "gelightGit.autoRefreshDebounce": {
+          "type": "number",
+          "default": 300,
+          "description": "%config.autoRefreshDebounce%"
+        }
+      }
+    }
+  },
+  "l10n": {
+    "bundle": "./l10n/bundle.l10n.json"
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.js --production",
+    "watch": "node esbuild.js --watch",
+    "compile": "tsc --noEmit",
+    "lint": "eslint src/ webview-ui/",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.7.1",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.0"
+  }
+}

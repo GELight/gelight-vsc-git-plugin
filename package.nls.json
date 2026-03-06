@@ -1,0 +1,13 @@
+{
+  "command.editCommitMessage": "Edit commit message",
+  "command.deleteCommit": "Delete commit",
+  "command.resetToCommit": "Reset to this commit",
+  "command.commit": "Commit",
+  "command.copyCommitHash": "Copy commit hash",
+  "command.openCommitOverview": "Open commit overview",
+  "command.softResetFileFromCommit": "Soft-reset this file from commit",
+  "command.refreshGraph": "Refresh",
+  "config.maxCommits": "Maximum number of commits to display in the Git Graph.",
+  "config.autoRefresh": "Automatically refresh the Git Graph and Commit Changes when files or Git state change.",
+  "config.autoRefreshDebounce": "Debounce delay in milliseconds for auto-refresh."
+}

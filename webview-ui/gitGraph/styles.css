@@ -1,0 +1,347 @@
+/* Git Graph webview styles — uses VSCode CSS variables for theming */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editor-background);
+  font-family: var(--vscode-font-family, sans-serif);
+  font-size: var(--vscode-font-size, 13px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Search bar */
+#search-bar {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+  flex-shrink: 0;
+}
+
+#search-input {
+  width: 100%;
+  padding: 4px 8px;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border, transparent);
+  border-radius: 2px;
+  outline: none;
+  font-size: var(--vscode-font-size, 13px);
+}
+
+#search-input:focus {
+  border-color: var(--vscode-focusBorder);
+}
+
+#search-input::placeholder {
+  color: var(--vscode-input-placeholderForeground);
+}
+
+/* Graph container */
+#graph-container {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+#commit-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  position: relative;
+}
+
+.list-wrapper {
+  position: relative;
+}
+
+/* SVG graph */
+.graph-svg {
+  pointer-events: none;
+}
+
+/* Commit rows */
+.commit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+  user-select: none;
+}
+
+.commit-row:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.commit-row.selected {
+  background-color: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground);
+}
+
+/* Commit hash */
+.commit-hash {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 12px;
+  color: var(--vscode-textLink-foreground);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 2px;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.commit-hash:hover {
+  background-color: var(--vscode-textLink-activeForeground);
+  color: var(--vscode-editor-background);
+}
+
+.commit-hash.copied {
+  background-color: var(--vscode-testing-iconPassed, #4ec9b0);
+  color: var(--vscode-editor-background);
+}
+
+/* Commit message */
+.commit-message {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 100px;
+}
+
+/* Tags and refs */
+.commit-tags {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tag-badge {
+  background-color: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.ref-badge {
+  background-color: var(--vscode-gitDecoration-addedResourceForeground, #4ec9b0);
+  color: var(--vscode-editor-background);
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Author and date */
+.commit-author {
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+  flex-shrink: 0;
+  min-width: 80px;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.commit-date {
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+  flex-shrink: 0;
+  min-width: 65px;
+  text-align: right;
+}
+
+/* Empty state */
+#empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+}
+
+/* Details panel */
+#commit-details {
+  width: 320px;
+  min-width: 280px;
+  border-left: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+  overflow-y: auto;
+  flex-shrink: 0;
+  background-color: var(--vscode-sideBar-background, var(--vscode-editor-background));
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+}
+
+.details-header h3 {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.close-details {
+  background: none;
+  border: none;
+  color: var(--vscode-foreground);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.close-details:hover {
+  background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.details-body {
+  padding: 8px 12px;
+}
+
+.detail-field {
+  margin-bottom: 8px;
+}
+
+.detail-label {
+  display: block;
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.hash-value {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 12px;
+}
+
+.message-field {
+  margin-top: 12px;
+}
+
+.commit-full-message {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 12px;
+  background-color: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
+  padding: 8px;
+  border-radius: 3px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* File list in details */
+.detail-section {
+  margin-top: 16px;
+}
+
+.detail-section h4 {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--vscode-foreground);
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: default;
+}
+
+.file-entry:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.file-status {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 11px;
+  font-weight: bold;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.file-status.status-M {
+  color: var(--vscode-gitDecoration-modifiedResourceForeground, #e2c08d);
+}
+
+.file-status.status-A {
+  color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
+}
+
+.file-status.status-D {
+  color: var(--vscode-gitDecoration-deletedResourceForeground, #c74e39);
+}
+
+.file-status.status-R {
+  color: var(--vscode-gitDecoration-renamedResourceForeground, #73c991);
+}
+
+.file-status.status-C {
+  color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
+}
+
+.file-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Hidden utility */
+.hidden {
+  display: none !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-background);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-hoverBackground);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--vscode-scrollbarSlider-activeBackground);
+}

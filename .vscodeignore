@@ -1,0 +1,12 @@
+.vscode/**
+src/**
+webview-ui/**
+planning/**
+node_modules/**
+.gitignore
+tsconfig.json
+tsconfig.webview.json
+esbuild.js
+PLANNING.md
+*.vsix
+**/*.map
