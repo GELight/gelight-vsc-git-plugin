@@ -154,6 +154,109 @@ function updateStringPlaceholders(): void {
   }
 }
 
+// --- File icon helpers ---
+function getFileExtension(filePath: string): string {
+  const name = filePath.split("/").pop() ?? "";
+  const lastDot = name.lastIndexOf(".");
+  if (lastDot === -1) return "";
+  return name.substring(lastDot + 1).toLowerCase();
+}
+
+function getFileIconClass(ext: string): string {
+  const map: Record<string, string> = {
+    ts: "icon-ts",
+    tsx: "icon-tsx",
+    js: "icon-js",
+    jsx: "icon-jsx",
+    json: "icon-json",
+    html: "icon-html",
+    css: "icon-css",
+    scss: "icon-scss",
+    less: "icon-css",
+    md: "icon-md",
+    yml: "icon-yaml",
+    yaml: "icon-yaml",
+    py: "icon-py",
+    java: "icon-java",
+    kt: "icon-java",
+    svg: "icon-img",
+    png: "icon-img",
+    jpg: "icon-img",
+    gif: "icon-img",
+    ico: "icon-img",
+    sh: "icon-shell",
+    bat: "icon-shell",
+    ps1: "icon-shell",
+    xml: "icon-html",
+    vue: "icon-vue",
+    go: "icon-go",
+    rs: "icon-rs",
+    rb: "icon-rb",
+    php: "icon-php",
+    c: "icon-c",
+    cpp: "icon-cpp",
+    h: "icon-c",
+    cs: "icon-cs",
+    swift: "icon-swift",
+    lock: "icon-lock",
+    map: "icon-map",
+    txt: "icon-txt",
+    gitignore: "icon-git",
+    env: "icon-env",
+  };
+  return map[ext] || "icon-default";
+}
+
+function getFileIconLabel(ext: string): string {
+  const map: Record<string, string> = {
+    ts: "TS",
+    tsx: "TX",
+    js: "JS",
+    jsx: "JX",
+    json: "{ }",
+    html: "<>",
+    css: "#",
+    scss: "#",
+    less: "#",
+    md: "M",
+    yml: "Y",
+    yaml: "Y",
+    py: "PY",
+    java: "JA",
+    kt: "KT",
+    svg: "◇",
+    png: "◇",
+    jpg: "◇",
+    gif: "◇",
+    sh: "$",
+    bat: "$",
+    ps1: "$",
+    xml: "<>",
+    vue: "V",
+    go: "GO",
+    rs: "RS",
+    rb: "RB",
+    php: "PH",
+    c: "C",
+    cpp: "C+",
+    h: "H",
+    cs: "C#",
+    swift: "SW",
+    lock: "🔒",
+    txt: "Tx",
+    gitignore: "G",
+  };
+  return map[ext] || (ext ? ext.substring(0, 2).toUpperCase() : "··");
+}
+
+function createFileIcon(filePath: string): HTMLSpanElement {
+  const ext = getFileExtension(filePath);
+  const icon = document.createElement("span");
+  icon.className = `file-icon ${getFileIconClass(ext)}`;
+  icon.textContent = getFileIconLabel(ext);
+  return icon;
+}
+
 // --- File Tree Building ---
 function rebuildTrees(): void {
   const allChanges = [...stagedChanges, ...unstagedChanges];
@@ -336,6 +439,19 @@ function renderTreeNodes(
     });
     rowEl.appendChild(checkbox);
 
+    if (node.isDirectory) {
+      // Folder icon
+      const folderIcon = document.createElement("span");
+      folderIcon.className = `folder-icon ${node.expanded ? "folder-open" : "folder-closed"}`;
+      folderIcon.textContent = node.expanded ? "▾" : "▸";
+      rowEl.appendChild(folderIcon);
+    } else {
+      // File type icon
+      if (node.change) {
+        rowEl.appendChild(createFileIcon(node.path));
+      }
+    }
+
     // Status icon (for files)
     if (!node.isDirectory && node.change) {
       const statusEl = document.createElement("span");
@@ -347,6 +463,9 @@ function renderTreeNodes(
     // Name
     const nameEl = document.createElement("span");
     nameEl.className = "tree-name";
+    if (!node.isDirectory && node.change) {
+      nameEl.classList.add(`status-text-${node.change.status}`);
+    }
     nameEl.textContent = node.name;
     rowEl.appendChild(nameEl);
 
@@ -522,19 +641,39 @@ function renderOverviewDetails(): void {
       <span class="modal-detail-hash">${overviewSelectedCommit.shortHash}</span>
       <span class="modal-detail-msg">${escapeHtml(overviewSelectedCommit.message)}</span>
     </div>
-    <div class="modal-file-list">
+    <div class="modal-file-list" id="modal-file-list-container">
       ${overviewFiles
         .map(
           (f) => `
-        <div class="modal-file-entry">
+        <div class="modal-file-entry" data-path="${escapeHtml(f.path)}" data-status="${f.status}">
           <span class="file-status status-${f.status}">${f.status}</span>
-          <span class="file-path">${escapeHtml(f.path)}</span>
+          <span class="file-icon ${getFileIconClass(getFileExtension(f.path))}">${getFileIconLabel(getFileExtension(f.path))}</span>
+          <span class="file-path status-text-${f.status}">${escapeHtml(f.path)}</span>
         </div>
       `,
         )
         .join("")}
     </div>
   `;
+
+  // Bind dblclick on file entries to open diff
+  const fileEntries = document.querySelectorAll(
+    "#modal-file-list-container .modal-file-entry",
+  );
+  fileEntries.forEach((entry) => {
+    entry.addEventListener("dblclick", () => {
+      const fp = (entry as HTMLElement).dataset.path;
+      const st = (entry as HTMLElement).dataset.status;
+      if (fp && overviewSelectedCommit) {
+        vscode.postMessage({
+          type: "openDiffForCommit",
+          hash: overviewSelectedCommit.hash,
+          filePath: fp,
+          status: st || "M",
+        });
+      }
+    });
+  });
 }
 
 // --- Keyboard ---

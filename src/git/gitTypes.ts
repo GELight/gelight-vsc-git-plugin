@@ -132,4 +132,10 @@ export type WebviewToExtensionMessage =
   | { type: "searchCommits"; query: string }
   | { type: "searchFiles"; query: string }
   | { type: "openFile"; path: string; status: string }
+  | {
+      type: "openDiffForCommit";
+      hash: string;
+      filePath: string;
+      status: string;
+    }
   | { type: "requestRefresh" };

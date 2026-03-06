@@ -3,6 +3,7 @@
  * Renders the commit graph visualization and handles user interactions.
  */
 import * as vscode from "vscode";
+import * as path from "path";
 import { GitService } from "../../git/gitService";
 import { GitCliService } from "../../git/gitCliService";
 import { GitWatcher } from "../../git/gitWatcher";
@@ -97,6 +98,10 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
 
       case "searchCommits":
         // Client-side filtering — commits are already in webview
+        break;
+
+      case "openDiffForCommit":
+        await this._handleOpenDiffForCommit(msg.hash, msg.filePath, msg.status);
         break;
     }
   }
@@ -347,6 +352,69 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
         }
       },
     );
+  }
+
+  /**
+   * Open a side-by-side diff for a file in a specific commit.
+   */
+  private async _handleOpenDiffForCommit(
+    hash: string,
+    filePath: string,
+    status: string,
+  ): Promise<void> {
+    const repoPath = this._gitService.getRepoPath();
+    if (!repoPath) {
+      return;
+    }
+
+    const absolutePath = path.join(repoPath, filePath);
+    const fileUri = vscode.Uri.file(absolutePath);
+
+    if (status === "D") {
+      // Deleted file — show the parent version
+      const beforeUri = vscode.Uri.from({
+        scheme: "git",
+        path: fileUri.path,
+        query: JSON.stringify({ path: absolutePath, ref: `${hash}~1` }),
+      });
+      await vscode.commands.executeCommand("vscode.open", beforeUri);
+    } else if (status === "A") {
+      // Added file — diff empty vs committed version
+      const emptyUri = vscode.Uri.from({
+        scheme: "git",
+        path: fileUri.path,
+        query: JSON.stringify({ path: absolutePath, ref: `${hash}~1` }),
+      });
+      const afterUri = vscode.Uri.from({
+        scheme: "git",
+        path: fileUri.path,
+        query: JSON.stringify({ path: absolutePath, ref: hash }),
+      });
+      await vscode.commands.executeCommand(
+        "vscode.diff",
+        emptyUri,
+        afterUri,
+        `${filePath} (${hash.substring(0, 7)})`,
+      );
+    } else {
+      // Modified / Renamed / Copied — diff parent vs commit
+      const beforeUri = vscode.Uri.from({
+        scheme: "git",
+        path: fileUri.path,
+        query: JSON.stringify({ path: absolutePath, ref: `${hash}~1` }),
+      });
+      const afterUri = vscode.Uri.from({
+        scheme: "git",
+        path: fileUri.path,
+        query: JSON.stringify({ path: absolutePath, ref: hash }),
+      });
+      await vscode.commands.executeCommand(
+        "vscode.diff",
+        beforeUri,
+        afterUri,
+        `${filePath} (${hash.substring(0, 7)})`,
+      );
+    }
   }
 
   /**

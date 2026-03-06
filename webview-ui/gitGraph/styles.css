@@ -314,11 +314,173 @@ body {
   padding: 3px 6px;
   border-radius: 3px;
   font-size: 12px;
-  cursor: default;
+  cursor: pointer;
 }
 
 .file-entry:hover {
   background-color: var(--vscode-list-hoverBackground);
+}
+
+/* File type icon (small badge) */
+.file-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 2px;
+  font-size: 8px;
+  font-weight: 700;
+  font-family: var(--vscode-editor-font-family, monospace);
+  border-radius: 2px;
+  flex-shrink: 0;
+  line-height: 1;
+  letter-spacing: 0.3px;
+}
+
+/* File icon colors by type */
+.file-icon.icon-ts {
+  background: #3178c6;
+  color: #fff;
+}
+.file-icon.icon-tsx {
+  background: #3178c6;
+  color: #fff;
+}
+.file-icon.icon-js {
+  background: #f1e05a;
+  color: #333;
+}
+.file-icon.icon-jsx {
+  background: #f1e05a;
+  color: #333;
+}
+.file-icon.icon-json {
+  background: #a37acc;
+  color: #fff;
+}
+.file-icon.icon-html {
+  background: #e44d26;
+  color: #fff;
+}
+.file-icon.icon-css {
+  background: #563d7c;
+  color: #fff;
+}
+.file-icon.icon-scss {
+  background: #c6538c;
+  color: #fff;
+}
+.file-icon.icon-md {
+  background: #519aba;
+  color: #fff;
+}
+.file-icon.icon-yaml {
+  background: #cb171e;
+  color: #fff;
+}
+.file-icon.icon-py {
+  background: #3572a5;
+  color: #fff;
+}
+.file-icon.icon-java {
+  background: #b07219;
+  color: #fff;
+}
+.file-icon.icon-img {
+  background: #a074c4;
+  color: #fff;
+}
+.file-icon.icon-shell {
+  background: #4eaa25;
+  color: #fff;
+}
+.file-icon.icon-vue {
+  background: #41b883;
+  color: #fff;
+}
+.file-icon.icon-go {
+  background: #00add8;
+  color: #fff;
+}
+.file-icon.icon-rs {
+  background: #dea584;
+  color: #333;
+}
+.file-icon.icon-rb {
+  background: #cc342d;
+  color: #fff;
+}
+.file-icon.icon-php {
+  background: #4f5d95;
+  color: #fff;
+}
+.file-icon.icon-c {
+  background: #555;
+  color: #fff;
+}
+.file-icon.icon-cpp {
+  background: #f34b7d;
+  color: #fff;
+}
+.file-icon.icon-cs {
+  background: #178600;
+  color: #fff;
+}
+.file-icon.icon-swift {
+  background: #f05138;
+  color: #fff;
+}
+.file-icon.icon-lock {
+  background: #555;
+  color: #aaa;
+  font-size: 10px;
+}
+.file-icon.icon-map {
+  background: #555;
+  color: #aaa;
+}
+.file-icon.icon-txt {
+  background: #6a737d;
+  color: #fff;
+}
+.file-icon.icon-git {
+  background: #f05032;
+  color: #fff;
+}
+.file-icon.icon-env {
+  background: #ecd53f;
+  color: #333;
+}
+.file-icon.icon-default {
+  background: var(--vscode-badge-background, #555);
+  color: var(--vscode-badge-foreground, #fff);
+}
+
+/* File name coloring by git status */
+.status-text-M {
+  color: var(--vscode-gitDecoration-modifiedResourceForeground, #e2c08d);
+}
+
+.status-text-A {
+  color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
+}
+
+.status-text-D {
+  color: var(--vscode-gitDecoration-deletedResourceForeground, #c74e39);
+  text-decoration: line-through;
+  text-decoration-color: var(
+    --vscode-gitDecoration-deletedResourceForeground,
+    #c74e39
+  );
+}
+
+.status-text-R {
+  color: var(--vscode-gitDecoration-renamedResourceForeground, #73c991);
+}
+
+.status-text-C {
+  color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
 }
 
 .file-status {

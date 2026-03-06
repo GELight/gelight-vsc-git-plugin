@@ -112,6 +112,10 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
         await this._handleOpenFile(msg.path, msg.status);
         break;
 
+      case "openDiffForCommit":
+        await this._handleOpenDiffForCommit(msg.hash, msg.filePath, msg.status);
+        break;
+
       case "requestRefresh":
         await this._updateChanges();
         break;
@@ -282,6 +286,66 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
     } else {
       // Added / Untracked / other — just open the file
       await vscode.commands.executeCommand("vscode.open", fileUri);
+    }
+  }
+
+  /**
+   * Open a side-by-side diff for a file in a specific commit (used by commit overview modal).
+   */
+  private async _handleOpenDiffForCommit(
+    hash: string,
+    filePath: string,
+    status: string,
+  ): Promise<void> {
+    const repoPath = this._gitService.getRepoPath();
+    if (!repoPath) {
+      return;
+    }
+
+    const absolutePath = path.join(repoPath, filePath);
+    const fileUri = vscode.Uri.file(absolutePath);
+
+    if (status === "D") {
+      const beforeUri = vscode.Uri.from({
+        scheme: "git",
+        path: fileUri.path,
+        query: JSON.stringify({ path: absolutePath, ref: `${hash}~1` }),
+      });
+      await vscode.commands.executeCommand("vscode.open", beforeUri);
+    } else if (status === "A") {
+      const emptyUri = vscode.Uri.from({
+        scheme: "git",
+        path: fileUri.path,
+        query: JSON.stringify({ path: absolutePath, ref: `${hash}~1` }),
+      });
+      const afterUri = vscode.Uri.from({
+        scheme: "git",
+        path: fileUri.path,
+        query: JSON.stringify({ path: absolutePath, ref: hash }),
+      });
+      await vscode.commands.executeCommand(
+        "vscode.diff",
+        emptyUri,
+        afterUri,
+        `${filePath} (${hash.substring(0, 7)})`,
+      );
+    } else {
+      const beforeUri = vscode.Uri.from({
+        scheme: "git",
+        path: fileUri.path,
+        query: JSON.stringify({ path: absolutePath, ref: `${hash}~1` }),
+      });
+      const afterUri = vscode.Uri.from({
+        scheme: "git",
+        path: fileUri.path,
+        query: JSON.stringify({ path: absolutePath, ref: hash }),
+      });
+      await vscode.commands.executeCommand(
+        "vscode.diff",
+        beforeUri,
+        afterUri,
+        `${filePath} (${hash.substring(0, 7)})`,
+      );
     }
   }
 

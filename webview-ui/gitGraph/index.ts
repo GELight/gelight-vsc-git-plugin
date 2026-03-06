@@ -130,6 +130,109 @@ function updateStringPlaceholders(): void {
   }
 }
 
+// --- File icon helpers ---
+function getFileExtension(filePath: string): string {
+  const name = filePath.split("/").pop() ?? "";
+  const lastDot = name.lastIndexOf(".");
+  if (lastDot === -1) return "";
+  return name.substring(lastDot + 1).toLowerCase();
+}
+
+function getFileIconClass(ext: string): string {
+  const map: Record<string, string> = {
+    ts: "icon-ts",
+    tsx: "icon-tsx",
+    js: "icon-js",
+    jsx: "icon-jsx",
+    json: "icon-json",
+    html: "icon-html",
+    css: "icon-css",
+    scss: "icon-scss",
+    less: "icon-css",
+    md: "icon-md",
+    yml: "icon-yaml",
+    yaml: "icon-yaml",
+    py: "icon-py",
+    java: "icon-java",
+    kt: "icon-java",
+    svg: "icon-img",
+    png: "icon-img",
+    jpg: "icon-img",
+    gif: "icon-img",
+    ico: "icon-img",
+    sh: "icon-shell",
+    bat: "icon-shell",
+    ps1: "icon-shell",
+    xml: "icon-html",
+    vue: "icon-vue",
+    go: "icon-go",
+    rs: "icon-rs",
+    rb: "icon-rb",
+    php: "icon-php",
+    c: "icon-c",
+    cpp: "icon-cpp",
+    h: "icon-c",
+    cs: "icon-cs",
+    swift: "icon-swift",
+    lock: "icon-lock",
+    map: "icon-map",
+    txt: "icon-txt",
+    gitignore: "icon-git",
+    env: "icon-env",
+  };
+  return map[ext] || "icon-default";
+}
+
+function getFileIconLabel(ext: string): string {
+  const map: Record<string, string> = {
+    ts: "TS",
+    tsx: "TX",
+    js: "JS",
+    jsx: "JX",
+    json: "{ }",
+    html: "<>",
+    css: "#",
+    scss: "#",
+    less: "#",
+    md: "M",
+    yml: "Y",
+    yaml: "Y",
+    py: "PY",
+    java: "JA",
+    kt: "KT",
+    svg: "◇",
+    png: "◇",
+    jpg: "◇",
+    gif: "◇",
+    sh: "$",
+    bat: "$",
+    ps1: "$",
+    xml: "<>",
+    vue: "V",
+    go: "GO",
+    rs: "RS",
+    rb: "RB",
+    php: "PH",
+    c: "C",
+    cpp: "C+",
+    h: "H",
+    cs: "C#",
+    swift: "SW",
+    lock: "🔒",
+    txt: "Tx",
+    gitignore: "G",
+  };
+  return map[ext] || (ext ? ext.substring(0, 2).toUpperCase() : "··");
+}
+
+function createFileIcon(filePath: string): HTMLSpanElement {
+  const ext = getFileExtension(filePath);
+  const icon = document.createElement("span");
+  icon.className = `file-icon ${getFileIconClass(ext)}`;
+  icon.textContent = getFileIconLabel(ext);
+  return icon;
+}
+
 // --- Render commit list ---
 function renderCommitList(): void {
   if (filteredRows.length === 0) {
@@ -420,18 +523,21 @@ function renderDetails(): void {
       </div>
       <div class="detail-section">
         <h4>${strings.changedFiles || "Changed Files"} (${detailsFiles.length})</h4>
-        <div class="file-list">
+        <div class="file-list" id="details-file-list">
           ${detailsFiles
             .map(
               (f) => `
-            <div class="file-entry" data-vscode-context='${JSON.stringify({
-              webviewSection: "commitFile",
-              commitHash: detailsCommit!.hash,
-              filePath: f.path,
-              preventDefaultContextMenuItems: true,
-            })}'>
+            <div class="file-entry" data-path="${escapeHtml(f.path)}" data-status="${f.status}" data-vscode-context='${JSON.stringify(
+              {
+                webviewSection: "commitFile",
+                commitHash: detailsCommit!.hash,
+                filePath: f.path,
+                preventDefaultContextMenuItems: true,
+              },
+            )}'>
               <span class="file-status status-${f.status}">${f.status}</span>
-              <span class="file-path">${escapeHtml(f.path)}</span>
+              <span class="file-icon ${getFileIconClass(getFileExtension(f.path))}">${getFileIconLabel(getFileExtension(f.path))}</span>
+              <span class="file-path status-text-${f.status}">${escapeHtml(f.path)}</span>
             </div>
           `,
             )
@@ -445,6 +551,25 @@ function renderDetails(): void {
   document
     .getElementById("close-details")
     ?.addEventListener("click", hideDetails);
+
+  // Bind dblclick on file entries to open diff
+  const fileEntries = document.querySelectorAll(
+    "#details-file-list .file-entry",
+  );
+  fileEntries.forEach((entry) => {
+    entry.addEventListener("dblclick", () => {
+      const fp = (entry as HTMLElement).dataset.path;
+      const st = (entry as HTMLElement).dataset.status;
+      if (fp && detailsCommit) {
+        vscode.postMessage({
+          type: "openDiffForCommit",
+          hash: detailsCommit.hash,
+          filePath: fp,
+          status: st || "M",
+        });
+      }
+    });
+  });
 }
 
 function hideDetails(): void {

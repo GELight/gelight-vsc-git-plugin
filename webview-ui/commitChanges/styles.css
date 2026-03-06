@@ -108,15 +108,246 @@ body {
   flex-shrink: 0;
 }
 
-/* Checkbox */
+/* Checkbox — custom styled to match VS Code theme */
 .tree-row input[type="checkbox"],
 .tree-section-header input[type="checkbox"],
 #amend-row input[type="checkbox"] {
-  accent-color: var(--vscode-checkbox-background, var(--vscode-focusBorder));
-  cursor: pointer;
-  width: 14px;
-  height: 14px;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
+  border: 1px solid var(--vscode-checkbox-border, var(--vscode-foreground));
+  background: var(--vscode-checkbox-background, transparent);
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  transition:
+    background-color 0.1s ease,
+    border-color 0.1s ease;
+}
+
+.tree-row input[type="checkbox"]:checked,
+.tree-section-header input[type="checkbox"]:checked,
+#amend-row input[type="checkbox"]:checked {
+  background: var(
+    --vscode-checkbox-selectBackground,
+    var(--vscode-focusBorder)
+  );
+  border-color: var(--vscode-checkbox-selectBorder, var(--vscode-focusBorder));
+}
+
+.tree-row input[type="checkbox"]:checked::after,
+.tree-section-header input[type="checkbox"]:checked::after,
+#amend-row input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--vscode-checkbox-foreground, #fff);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.tree-row input[type="checkbox"]:focus-visible,
+.tree-section-header input[type="checkbox"]:focus-visible,
+#amend-row input[type="checkbox"]:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 1px;
+}
+
+.tree-row input[type="checkbox"]:hover,
+.tree-section-header input[type="checkbox"]:hover,
+#amend-row input[type="checkbox"]:hover {
+  border-color: var(--vscode-focusBorder);
+}
+
+/* Folder icon */
+.folder-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  flex-shrink: 0;
+  color: var(--vscode-icon-foreground, #c5c5c5);
+}
+
+.folder-icon.folder-open {
+  color: var(--vscode-gitDecoration-modifiedResourceForeground, #e2c08d);
+}
+
+.folder-icon.folder-closed {
+  color: var(--vscode-icon-foreground, #c5c5c5);
+}
+
+/* File type icon (small badge) */
+.file-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 2px;
+  font-size: 8px;
+  font-weight: 700;
+  font-family: var(--vscode-editor-font-family, monospace);
+  border-radius: 2px;
+  flex-shrink: 0;
+  line-height: 1;
+  letter-spacing: 0.3px;
+}
+
+/* File icon colors by type */
+.file-icon.icon-ts {
+  background: #3178c6;
+  color: #fff;
+}
+.file-icon.icon-tsx {
+  background: #3178c6;
+  color: #fff;
+}
+.file-icon.icon-js {
+  background: #f1e05a;
+  color: #333;
+}
+.file-icon.icon-jsx {
+  background: #f1e05a;
+  color: #333;
+}
+.file-icon.icon-json {
+  background: #a37acc;
+  color: #fff;
+}
+.file-icon.icon-html {
+  background: #e44d26;
+  color: #fff;
+}
+.file-icon.icon-css {
+  background: #563d7c;
+  color: #fff;
+}
+.file-icon.icon-scss {
+  background: #c6538c;
+  color: #fff;
+}
+.file-icon.icon-md {
+  background: #519aba;
+  color: #fff;
+}
+.file-icon.icon-yaml {
+  background: #cb171e;
+  color: #fff;
+}
+.file-icon.icon-py {
+  background: #3572a5;
+  color: #fff;
+}
+.file-icon.icon-java {
+  background: #b07219;
+  color: #fff;
+}
+.file-icon.icon-img {
+  background: #a074c4;
+  color: #fff;
+}
+.file-icon.icon-shell {
+  background: #4eaa25;
+  color: #fff;
+}
+.file-icon.icon-vue {
+  background: #41b883;
+  color: #fff;
+}
+.file-icon.icon-go {
+  background: #00add8;
+  color: #fff;
+}
+.file-icon.icon-rs {
+  background: #dea584;
+  color: #333;
+}
+.file-icon.icon-rb {
+  background: #cc342d;
+  color: #fff;
+}
+.file-icon.icon-php {
+  background: #4f5d95;
+  color: #fff;
+}
+.file-icon.icon-c {
+  background: #555;
+  color: #fff;
+}
+.file-icon.icon-cpp {
+  background: #f34b7d;
+  color: #fff;
+}
+.file-icon.icon-cs {
+  background: #178600;
+  color: #fff;
+}
+.file-icon.icon-swift {
+  background: #f05138;
+  color: #fff;
+}
+.file-icon.icon-lock {
+  background: #555;
+  color: #aaa;
+  font-size: 10px;
+}
+.file-icon.icon-map {
+  background: #555;
+  color: #aaa;
+}
+.file-icon.icon-txt {
+  background: #6a737d;
+  color: #fff;
+}
+.file-icon.icon-git {
+  background: #f05032;
+  color: #fff;
+}
+.file-icon.icon-env {
+  background: #ecd53f;
+  color: #333;
+}
+.file-icon.icon-default {
+  background: var(--vscode-badge-background, #555);
+  color: var(--vscode-badge-foreground, #fff);
+}
+
+/* File name coloring by git status */
+.status-text-M {
+  color: var(--vscode-gitDecoration-modifiedResourceForeground, #e2c08d);
+}
+
+.status-text-A {
+  color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
+}
+
+.status-text-D {
+  color: var(--vscode-gitDecoration-deletedResourceForeground, #c74e39);
+  text-decoration: line-through;
+  text-decoration-color: var(
+    --vscode-gitDecoration-deletedResourceForeground,
+    #c74e39
+  );
+}
+
+.status-text-R {
+  color: var(--vscode-gitDecoration-renamedResourceForeground, #73c991);
+}
+
+.status-text-C {
+  color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
+}
+
+.status-text-\\? {
+  color: var(--vscode-gitDecoration-untrackedResourceForeground, #73c991);
 }
 
 /* File status */
