@@ -384,6 +384,7 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
   </div>
   <div id="graph-container">
     <div id="commit-list"></div>
+    <div id="resize-handle" class="hidden"></div>
     <div id="commit-details" class="hidden"></div>
   </div>
   <div id="empty-state" class="hidden">

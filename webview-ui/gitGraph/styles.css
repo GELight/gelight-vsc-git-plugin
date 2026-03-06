@@ -20,7 +20,8 @@ body {
 /* Search bar */
 #search-bar {
   padding: 6px 8px;
-  border-bottom: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+  border-bottom: 1px solid
+    var(--vscode-panel-border, var(--vscode-widget-border, transparent));
   flex-shrink: 0;
 }
 
@@ -135,7 +136,10 @@ body {
 }
 
 .ref-badge {
-  background-color: var(--vscode-gitDecoration-addedResourceForeground, #4ec9b0);
+  background-color: var(
+    --vscode-gitDecoration-addedResourceForeground,
+    #4ec9b0
+  );
   color: var(--vscode-editor-background);
   padding: 1px 6px;
   border-radius: 8px;
@@ -172,14 +176,43 @@ body {
   font-style: italic;
 }
 
+/* Resize handle */
+#resize-handle {
+  width: 4px;
+  cursor: col-resize;
+  flex-shrink: 0;
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+  position: relative;
+  z-index: 10;
+}
+
+#resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -3px;
+  right: -3px;
+}
+
+#resize-handle:hover,
+#resize-handle.dragging {
+  background-color: var(--vscode-focusBorder);
+}
+
 /* Details panel */
 #commit-details {
   width: 320px;
-  min-width: 280px;
-  border-left: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+  min-width: 180px;
+  border-left: 1px solid
+    var(--vscode-panel-border, var(--vscode-widget-border, transparent));
   overflow-y: auto;
   flex-shrink: 0;
-  background-color: var(--vscode-sideBar-background, var(--vscode-editor-background));
+  background-color: var(
+    --vscode-sideBar-background,
+    var(--vscode-editor-background)
+  );
 }
 
 .details-header {
@@ -187,7 +220,8 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  border-bottom: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+  border-bottom: 1px solid
+    var(--vscode-panel-border, var(--vscode-widget-border, transparent));
 }
 
 .details-header h3 {
@@ -245,7 +279,10 @@ body {
   word-break: break-word;
   font-family: var(--vscode-editor-font-family, monospace);
   font-size: 12px;
-  background-color: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
+  background-color: var(
+    --vscode-textBlockQuote-background,
+    rgba(127, 127, 127, 0.1)
+  );
   padding: 8px;
   border-radius: 3px;
   max-height: 200px;
