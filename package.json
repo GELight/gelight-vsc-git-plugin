@@ -2,7 +2,7 @@
   "name": "gelight-vsc-git-plugin",
   "displayName": "GELight Git",
   "description": "A powerful Git integration for Visual Studio Code with Git Graph and Commit Changes panels.",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "publisher": "gelight",
   "license": "MIT",
   "engines": {
@@ -26,18 +26,27 @@
           "title": "GELight Git",
           "icon": "media/icons/gelight-git.svg"
         }
+      ],
+      "panel": [
+        {
+          "id": "gelight-git-panel",
+          "title": "Git Graph",
+          "icon": "media/icons/gelight-git.svg"
+        }
       ]
     },
     "views": {
       "gelight-git": [
         {
-          "id": "gelightGitGraph",
-          "name": "Git Graph",
-          "type": "webview"
-        },
-        {
           "id": "gelightCommitChanges",
           "name": "Commit Changes",
+          "type": "webview"
+        }
+      ],
+      "gelight-git-panel": [
+        {
+          "id": "gelightGitGraph",
+          "name": "Git Graph",
           "type": "webview"
         }
       ]

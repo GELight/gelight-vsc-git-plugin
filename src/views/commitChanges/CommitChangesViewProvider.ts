@@ -63,7 +63,7 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
    * Send current file changes to the webview.
    */
   public async _updateChanges(): Promise<void> {
-    if (!this._view?.visible) {
+    if (!this._view) {
       return;
     }
 
@@ -71,12 +71,17 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
     const unstaged = this._gitService.getWorkingTreeChanges();
     const untracked = this._gitService.getUntrackedFiles();
 
-    // Update Activity Bar badge with total changed file count
+    // Update Activity Bar badge with total changed file count (always, even when not visible)
     const totalChanges = staged.length + unstaged.length + untracked.length;
     this._view.badge =
       totalChanges > 0
         ? { tooltip: `${totalChanges} changed files`, value: totalChanges }
         : undefined;
+
+    // Only send webview messages when visible
+    if (!this._view.visible) {
+      return;
+    }
 
     this._view.webview.postMessage({
       type: "updateChanges",
