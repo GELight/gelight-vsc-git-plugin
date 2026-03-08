@@ -16,6 +16,9 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
   private _disposables: vscode.Disposable[] = [];
 
+  private readonly _onSelectCommitInGraph = new vscode.EventEmitter<string>();
+  public readonly onSelectCommitInGraph = this._onSelectCommitInGraph.event;
+
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private readonly _gitService: GitService,
@@ -67,6 +70,13 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
     const staged = this._gitService.getIndexChanges();
     const unstaged = this._gitService.getWorkingTreeChanges();
     const untracked = this._gitService.getUntrackedFiles();
+
+    // Update Activity Bar badge with total changed file count
+    const totalChanges = staged.length + unstaged.length + untracked.length;
+    this._view.badge =
+      totalChanges > 0
+        ? { tooltip: `${totalChanges} changed files`, value: totalChanges }
+        : undefined;
 
     this._view.webview.postMessage({
       type: "updateChanges",
@@ -134,6 +144,17 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
 
       case "openDiffForCommit":
         await this._handleOpenDiffForCommit(msg.hash, msg.filePath, msg.status);
+        break;
+
+      case "copyHash":
+        await vscode.env.clipboard.writeText(msg.hash);
+        vscode.window.showInformationMessage(
+          `Copied: ${msg.hash.substring(0, 7)}`,
+        );
+        break;
+
+      case "selectCommitInGraph":
+        this._onSelectCommitInGraph.fire(msg.hash);
         break;
 
       case "requestRefresh":
@@ -498,6 +519,7 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
   }
 
   dispose(): void {
+    this._onSelectCommitInGraph.dispose();
     this._disposables.forEach((d) => d.dispose());
   }
 }

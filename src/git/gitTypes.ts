@@ -124,6 +124,7 @@ export type ExtensionToWebviewMessage =
     }
   | { type: "setStrings"; strings: Record<string, string> }
   | { type: "clearSelection" }
+  | { type: "selectCommit"; hash: string }
   | {
       type: "updateUnpushedCommits";
       commits: UnpushedCommit[];
@@ -153,4 +154,5 @@ export type WebviewToExtensionMessage =
       filePath: string;
       status: string;
     }
+  | { type: "selectCommitInGraph"; hash: string }
   | { type: "requestRefresh" };

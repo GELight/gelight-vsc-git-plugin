@@ -762,12 +762,24 @@ function renderUnpushedCommits(): void {
     row.className = "unpushed-row";
 
     const hashEl = document.createElement("span");
-    hashEl.className = "unpushed-hash";
+    hashEl.className = "unpushed-hash clickable";
     hashEl.textContent = commit.shortHash;
+    hashEl.title = "Click to copy hash";
+    hashEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      vscode.postMessage({ type: "copyHash", hash: commit.hash });
+      hashEl.classList.add("copied");
+      setTimeout(() => hashEl.classList.remove("copied"), 1000);
+    });
 
     const msgEl = document.createElement("span");
-    msgEl.className = "unpushed-msg";
+    msgEl.className = "unpushed-msg clickable";
     msgEl.textContent = commit.message;
+    msgEl.title = "Click to show in Git Graph";
+    msgEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      vscode.postMessage({ type: "selectCommitInGraph", hash: commit.hash });
+    });
 
     row.appendChild(hashEl);
     row.appendChild(msgEl);

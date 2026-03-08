@@ -432,6 +432,13 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
     this._view?.webview.postMessage({ type: "clearSelection" });
   }
 
+  /**
+   * Select a commit in the graph from an external source (e.g. unpushed commits list).
+   */
+  public selectCommit(hash: string): void {
+    this._view?.webview.postMessage({ type: "selectCommit", hash });
+  }
+
   private _getHtml(webview: vscode.Webview): string {
     const nonce = getNonce();
     const scriptUri = getWebviewUri(webview, this._extensionUri, [

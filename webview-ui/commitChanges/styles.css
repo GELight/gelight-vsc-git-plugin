@@ -712,11 +712,32 @@ button.icon-btn:hover {
   flex-shrink: 0;
 }
 
+.unpushed-hash.clickable {
+  cursor: pointer;
+}
+
+.unpushed-hash.clickable:hover {
+  text-decoration: underline;
+}
+
+.unpushed-hash.copied {
+  color: var(--vscode-terminal-ansiGreen, #89d185);
+}
+
 .unpushed-msg {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--vscode-foreground);
+}
+
+.unpushed-msg.clickable {
+  cursor: pointer;
+}
+
+.unpushed-msg.clickable:hover {
+  color: var(--vscode-textLink-foreground);
+  text-decoration: underline;
 }
 
 .unpushed-note {

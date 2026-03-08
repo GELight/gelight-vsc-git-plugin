@@ -95,6 +95,24 @@ window.addEventListener("message", (event) => {
       renderCommitList();
       hideDetails();
       break;
+    case "selectCommit":
+      selectedHashes.clear();
+      selectedHashes.add(msg.hash);
+      lastClickedHash = msg.hash;
+      renderCommitList();
+      updateContextMenu();
+      // Scroll to the selected commit
+      requestAnimationFrame(() => {
+        const rowEl = commitListEl.querySelector(
+          `.commit-row[data-hash="${msg.hash}"]`,
+        ) as HTMLElement | null;
+        if (rowEl) {
+          rowEl.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+      });
+      // Request details
+      vscode.postMessage({ type: "requestCommitDetails", hash: msg.hash });
+      break;
   }
 });
 
