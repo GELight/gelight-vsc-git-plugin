@@ -30,5 +30,8 @@
   "commitDetails": "Commit-Details",
   "copyCommitMessage": "Commit-Nachricht kopieren",
   "commitMessageCopied": "Commit-Nachricht kopiert",
-  "refresh": "Aktualisieren"
+  "refresh": "Aktualisieren",
+  "unpushedCommits": "Nicht gepushte Commits",
+  "noUpstreamBranch": "Kein Upstream-Branch konfiguriert",
+  "allChangesPushed": "Alle Commits gepusht"
 }

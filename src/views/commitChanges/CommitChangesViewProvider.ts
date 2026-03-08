@@ -22,7 +22,10 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
     private readonly _gitWatcher: GitWatcher,
   ) {
     this._disposables.push(
-      this._gitWatcher.onDidChange(() => this._updateChanges()),
+      this._gitWatcher.onDidChange(() => {
+        this._updateChanges();
+        this._updateUnpushedCommits();
+      }),
     );
   }
 
@@ -73,11 +76,28 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
+  /**
+   * Send unpushed commits to the webview.
+   */
+  private async _updateUnpushedCommits(): Promise<void> {
+    if (!this._view?.visible) {
+      return;
+    }
+
+    const result = await this._gitService.getUnpushedCommits();
+    this._view.webview.postMessage({
+      type: "updateUnpushedCommits",
+      commits: result.commits,
+      hasUpstream: result.hasUpstream,
+    });
+  }
+
   private async _handleMessage(msg: WebviewToExtensionMessage): Promise<void> {
     switch (msg.type) {
       case "ready":
         await this._sendLocalizedStrings();
         await this._updateChanges();
+        await this._updateUnpushedCommits();
         break;
 
       case "commit":
@@ -132,13 +152,22 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
       return;
     }
 
+    const repoPath = this._gitService.getRepoPath();
+    if (!repoPath) {
+      vscode.window.showErrorMessage("No Git repository found.");
+      return;
+    }
+
     try {
+      const cli = new GitCliService(repoPath);
+
       // Stage selected files first
       if (files.length > 0) {
-        await this._gitService.stageFiles(files);
+        await cli.stageFiles(files);
       }
 
-      await this._gitService.commit(message, amend);
+      await cli.commit(message, amend);
+      await this._gitService.refreshState();
       this._gitWatcher.forceUpdate();
 
       // Clear the commit message in webview
@@ -168,6 +197,8 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
         },
       );
       vscode.window.showInformationMessage("Push successful.");
+      await this._gitService.refreshState();
+      this._gitWatcher.forceUpdate();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       vscode.window.showErrorMessage(`Push failed: ${errorMsg}`);
@@ -198,6 +229,8 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
         },
       );
       vscode.window.showInformationMessage("Force push successful.");
+      await this._gitService.refreshState();
+      this._gitWatcher.forceUpdate();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       vscode.window.showErrorMessage(`Force push failed: ${errorMsg}`);
@@ -369,6 +402,9 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
         deselectAll: vscode.l10n.t("Deselect all"),
         commitOverview: vscode.l10n.t("Commit Overview"),
         changedFiles: vscode.l10n.t("Changed Files"),
+        unpushedCommits: vscode.l10n.t("Unpushed Commits"),
+        noUpstreamBranch: vscode.l10n.t("No upstream branch configured"),
+        allChangesPushed: vscode.l10n.t("All commits pushed"),
       },
     });
   }
@@ -402,6 +438,14 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
     </div>
     <div id="file-tree"></div>
     <div id="untracked-tree"></div>
+  </div>
+
+  <div id="unpushed-section" class="hidden">
+    <div id="unpushed-header">
+      <span id="unpushed-toggle" class="tree-arrow expanded">&#x25B6;</span>
+      <span id="unpushed-label" class="section-label">Unpushed Commits (0)</span>
+    </div>
+    <div id="unpushed-list"></div>
   </div>
 
   <div id="commit-form">

@@ -48,6 +48,15 @@ export interface GitFileChange {
   staged: boolean;
 }
 
+/** A commit that has not been pushed to the remote. */
+export interface UnpushedCommit {
+  hash: string;
+  shortHash: string;
+  message: string;
+  authorName: string;
+  date: string;
+}
+
 /** Represents an entry in the file tree structure. */
 export interface FileTreeNode {
   /** Display name (filename or folder name) */
@@ -114,7 +123,12 @@ export type ExtensionToWebviewMessage =
       error?: string;
     }
   | { type: "setStrings"; strings: Record<string, string> }
-  | { type: "clearSelection" };
+  | { type: "clearSelection" }
+  | {
+      type: "updateUnpushedCommits";
+      commits: UnpushedCommit[];
+      hasUpstream: boolean;
+    };
 
 /** Messages from Webview to Extension Host */
 export type WebviewToExtensionMessage =

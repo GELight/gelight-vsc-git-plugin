@@ -45,6 +45,14 @@ interface GraphRow {
   }[];
 }
 
+interface UnpushedCommit {
+  hash: string;
+  shortHash: string;
+  message: string;
+  authorName: string;
+  date: string;
+}
+
 interface Strings {
   [key: string]: string;
 }
@@ -70,6 +78,9 @@ let savedMessage = "";
 let overviewCommits: GraphRow[] = [];
 let overviewSelectedCommit: GitCommit | null = null;
 let overviewFiles: GitFileChange[] = [];
+let unpushedCommits: UnpushedCommit[] = [];
+let hasUpstream = false;
+let unpushedExpanded = true;
 
 // --- DOM References ---
 const fileTreeEl = document.getElementById("file-tree")!;
@@ -93,6 +104,10 @@ const modalEl = document.getElementById("commit-overview-modal")!;
 const modalCloseBtn = document.getElementById("modal-close")!;
 const modalCommitList = document.getElementById("modal-commit-list")!;
 const modalCommitDetails = document.getElementById("modal-commit-details")!;
+const unpushedSection = document.getElementById("unpushed-section")!;
+const unpushedToggle = document.getElementById("unpushed-toggle")!;
+const unpushedLabel = document.getElementById("unpushed-label")!;
+const unpushedList = document.getElementById("unpushed-list")!;
 
 // --- Message handling ---
 window.addEventListener("message", (event) => {
@@ -134,6 +149,11 @@ window.addEventListener("message", (event) => {
       overviewFiles = msg.files;
       renderOverviewDetails();
       break;
+    case "updateUnpushedCommits":
+      unpushedCommits = msg.commits;
+      hasUpstream = msg.hasUpstream;
+      renderUnpushedCommits();
+      break;
   }
 });
 
@@ -152,6 +172,7 @@ function updateStringPlaceholders(): void {
   if (modalTitle) {
     modalTitle.textContent = strings.commitOverview || "Commit Overview";
   }
+  renderUnpushedCommits();
 }
 
 // --- File icon helpers ---
@@ -697,6 +718,62 @@ document.addEventListener("keydown", (e) => {
 
 // Modal resizable (basic drag handle via CSS resize)
 // The modal uses CSS `resize: both` for simplicity
+
+// --- Unpushed Commits ---
+unpushedToggle.addEventListener("click", () => {
+  unpushedExpanded = !unpushedExpanded;
+  renderUnpushedCommits();
+});
+
+function renderUnpushedCommits(): void {
+  const title = strings.unpushedCommits || "Unpushed Commits";
+
+  if (!hasUpstream) {
+    unpushedSection.classList.remove("hidden");
+    unpushedLabel.textContent = title;
+    unpushedList.innerHTML = "";
+    const note = document.createElement("div");
+    note.className = "unpushed-note";
+    note.textContent =
+      strings.noUpstreamBranch || "No upstream branch configured";
+    unpushedList.appendChild(note);
+    unpushedToggle.classList.remove("expanded");
+    return;
+  }
+
+  if (unpushedCommits.length === 0) {
+    unpushedSection.classList.add("hidden");
+    return;
+  }
+
+  unpushedSection.classList.remove("hidden");
+  unpushedLabel.textContent = `${title} (${unpushedCommits.length})`;
+  unpushedToggle.classList.toggle("expanded", unpushedExpanded);
+
+  unpushedList.innerHTML = "";
+  if (!unpushedExpanded) {
+    unpushedList.classList.add("hidden");
+    return;
+  }
+  unpushedList.classList.remove("hidden");
+
+  for (const commit of unpushedCommits) {
+    const row = document.createElement("div");
+    row.className = "unpushed-row";
+
+    const hashEl = document.createElement("span");
+    hashEl.className = "unpushed-hash";
+    hashEl.textContent = commit.shortHash;
+
+    const msgEl = document.createElement("span");
+    msgEl.className = "unpushed-msg";
+    msgEl.textContent = commit.message;
+
+    row.appendChild(hashEl);
+    row.appendChild(msgEl);
+    unpushedList.appendChild(row);
+  }
+}
 
 // --- Utility ---
 function escapeHtml(str: string): string {

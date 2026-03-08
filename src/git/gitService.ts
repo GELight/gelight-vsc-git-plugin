@@ -2,8 +2,9 @@
  * Git service using VSCode's built-in Git extension API.
  * Handles standard Git operations: log, commit, push, staging, status.
  */
-import * as vscode from 'vscode';
-import { GitCommit, GitFileChange, FileChangeStatus } from './gitTypes';
+import * as vscode from "vscode";
+import * as path from "path";
+import { GitCommit, GitFileChange, FileChangeStatus } from "./gitTypes";
 
 // Types from vscode.git extension
 interface GitExtension {
@@ -22,9 +23,14 @@ interface Repository {
   inputBox: { value: string };
   log(options?: LogOptions): Promise<APICommit[]>;
   commit(message: string, opts?: CommitOptions): Promise<void>;
-  push(remoteName?: string, branchName?: string, setUpstream?: boolean, force?: ForcePushMode): Promise<void>;
-  add(paths: string[]): Promise<void>;
-  revert(paths: string[]): Promise<void>;
+  push(
+    remoteName?: string,
+    branchName?: string,
+    setUpstream?: boolean,
+    force?: ForcePushMode,
+  ): Promise<void>;
+  add(resources: vscode.Uri[]): Promise<void>;
+  revert(resources: vscode.Uri[]): Promise<void>;
   getCommit(ref: string): Promise<APICommit>;
   diff(cached?: boolean): Promise<string>;
   diffWithHEAD(path?: string): Promise<string>;
@@ -91,7 +97,7 @@ interface RefQuery {
   contains?: string;
   count?: number;
   pattern?: string;
-  sort?: 'alphabetically' | 'committerdate';
+  sort?: "alphabetically" | "committerdate";
 }
 
 enum ForcePushMode {
@@ -111,7 +117,8 @@ export class GitService implements vscode.Disposable {
   }
 
   private _initGitAPI(): void {
-    const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git');
+    const gitExtension =
+      vscode.extensions.getExtension<GitExtension>("vscode.git");
     if (gitExtension) {
       if (gitExtension.isActive) {
         this._gitAPI = gitExtension.exports.getAPI(1);
@@ -126,12 +133,14 @@ export class GitService implements vscode.Disposable {
   }
 
   private _watchRepository(): void {
-    if (!this._gitAPI) { return; }
+    if (!this._gitAPI) {
+      return;
+    }
 
     const repo = this.getRepository();
     if (repo) {
       this._disposables.push(
-        repo.state.onDidChange(() => this._onDidChangeState.fire())
+        repo.state.onDidChange(() => this._onDidChangeState.fire()),
       );
     }
 
@@ -140,11 +149,11 @@ export class GitService implements vscode.Disposable {
         const newRepo = this.getRepository();
         if (newRepo) {
           this._disposables.push(
-            newRepo.state.onDidChange(() => this._onDidChangeState.fire())
+            newRepo.state.onDidChange(() => this._onDidChangeState.fire()),
           );
         }
         this._onDidChangeState.fire();
-      })
+      }),
     );
   }
 
@@ -165,16 +174,18 @@ export class GitService implements vscode.Disposable {
    */
   public async getLog(maxCount?: number): Promise<GitCommit[]> {
     const repo = this.getRepository();
-    if (!repo) { return []; }
+    if (!repo) {
+      return [];
+    }
 
-    const config = vscode.workspace.getConfiguration('gelightGit');
-    const max = maxCount ?? config.get<number>('maxCommits', 150);
+    const config = vscode.workspace.getConfiguration("gelightGit");
+    const max = maxCount ?? config.get<number>("maxCommits", 150);
 
     try {
       const apiCommits = await repo.log({ maxEntries: max });
       const refs = repo.state.refs;
 
-      return apiCommits.map(c => this._mapCommit(c, refs));
+      return apiCommits.map((c) => this._mapCommit(c, refs));
     } catch {
       return [];
     }
@@ -183,9 +194,13 @@ export class GitService implements vscode.Disposable {
   /**
    * Get details for a specific commit including changed files.
    */
-  public async getCommitDetails(hash: string): Promise<{ commit: GitCommit; files: GitFileChange[] } | undefined> {
+  public async getCommitDetails(
+    hash: string,
+  ): Promise<{ commit: GitCommit; files: GitFileChange[] } | undefined> {
     const repo = this.getRepository();
-    if (!repo) { return undefined; }
+    if (!repo) {
+      return undefined;
+    }
 
     try {
       const apiCommit = await repo.getCommit(hash);
@@ -193,7 +208,7 @@ export class GitService implements vscode.Disposable {
       const commit = this._mapCommit(apiCommit, refs);
 
       // Get changed files via CLI (built-in API doesn't provide per-commit file list directly)
-      const { GitCliService } = await import('./gitCliService.js');
+      const { GitCliService } = await import("./gitCliService.js");
       const cli = new GitCliService(repo.rootUri.fsPath);
       const files = await cli.getCommitFiles(hash);
 
@@ -208,8 +223,10 @@ export class GitService implements vscode.Disposable {
    */
   public getWorkingTreeChanges(): GitFileChange[] {
     const repo = this.getRepository();
-    if (!repo) { return []; }
-    return repo.state.workingTreeChanges.map(c => this._mapChange(c, false));
+    if (!repo) {
+      return [];
+    }
+    return repo.state.workingTreeChanges.map((c) => this._mapChange(c, false));
   }
 
   /**
@@ -217,8 +234,10 @@ export class GitService implements vscode.Disposable {
    */
   public getIndexChanges(): GitFileChange[] {
     const repo = this.getRepository();
-    if (!repo) { return []; }
-    return repo.state.indexChanges.map(c => this._mapChange(c, true));
+    if (!repo) {
+      return [];
+    }
+    return repo.state.indexChanges.map((c) => this._mapChange(c, true));
   }
 
   /**
@@ -226,8 +245,10 @@ export class GitService implements vscode.Disposable {
    */
   public getUntrackedFiles(): GitFileChange[] {
     const repo = this.getRepository();
-    if (!repo) { return []; }
-    return repo.state.untrackedChanges.map(c => ({
+    if (!repo) {
+      return [];
+    }
+    return repo.state.untrackedChanges.map((c) => ({
       path: vscode.workspace.asRelativePath(c.uri),
       status: FileChangeStatus.Untracked,
       staged: false,
@@ -239,7 +260,9 @@ export class GitService implements vscode.Disposable {
    */
   public async commit(message: string, amend: boolean = false): Promise<void> {
     const repo = this.getRepository();
-    if (!repo) { throw new Error('No repository found'); }
+    if (!repo) {
+      throw new Error("No repository found");
+    }
     await repo.commit(message, { amend });
   }
 
@@ -248,7 +271,9 @@ export class GitService implements vscode.Disposable {
    */
   public async push(): Promise<void> {
     const repo = this.getRepository();
-    if (!repo) { throw new Error('No repository found'); }
+    if (!repo) {
+      throw new Error("No repository found");
+    }
     const head = repo.state.HEAD;
     await repo.push(undefined, head?.name);
   }
@@ -258,7 +283,9 @@ export class GitService implements vscode.Disposable {
    */
   public async forcePush(): Promise<void> {
     const repo = this.getRepository();
-    if (!repo) { throw new Error('No repository found'); }
+    if (!repo) {
+      throw new Error("No repository found");
+    }
     const head = repo.state.HEAD;
     await repo.push(undefined, head?.name, false, ForcePushMode.ForceWithLease);
   }
@@ -268,8 +295,14 @@ export class GitService implements vscode.Disposable {
    */
   public async stageFiles(paths: string[]): Promise<void> {
     const repo = this.getRepository();
-    if (!repo) { throw new Error('No repository found'); }
-    await repo.add(paths);
+    if (!repo) {
+      throw new Error("No repository found");
+    }
+    const repoRoot = repo.rootUri.fsPath;
+    const uris = paths.map((p) =>
+      vscode.Uri.file(path.isAbsolute(p) ? p : path.join(repoRoot, p)),
+    );
+    await repo.add(uris);
   }
 
   /**
@@ -277,8 +310,14 @@ export class GitService implements vscode.Disposable {
    */
   public async unstageFiles(paths: string[]): Promise<void> {
     const repo = this.getRepository();
-    if (!repo) { throw new Error('No repository found'); }
-    await repo.revert(paths);
+    if (!repo) {
+      throw new Error("No repository found");
+    }
+    const repoRoot = repo.rootUri.fsPath;
+    const uris = paths.map((p) =>
+      vscode.Uri.file(path.isAbsolute(p) ? p : path.join(repoRoot, p)),
+    );
+    await repo.revert(uris);
   }
 
   /**
@@ -286,35 +325,82 @@ export class GitService implements vscode.Disposable {
    */
   public async getHeadCommitMessage(): Promise<string> {
     const repo = this.getRepository();
-    if (!repo) { return ''; }
+    if (!repo) {
+      return "";
+    }
     try {
-      const headCommit = await repo.getCommit('HEAD');
+      const headCommit = await repo.getCommit("HEAD");
       return headCommit.message;
     } catch {
-      return '';
+      return "";
+    }
+  }
+
+  /**
+   * Force refresh the repository state.
+   */
+  public async refreshState(): Promise<void> {
+    const repo = this.getRepository();
+    if (repo) {
+      await repo.status();
+    }
+  }
+
+  /**
+   * Get unpushed commits (ahead of upstream).
+   */
+  public async getUnpushedCommits(): Promise<{
+    commits: {
+      hash: string;
+      shortHash: string;
+      message: string;
+      authorName: string;
+      date: string;
+    }[];
+    hasUpstream: boolean;
+  }> {
+    const repo = this.getRepository();
+    if (!repo) {
+      return { commits: [], hasUpstream: false };
+    }
+
+    const head = repo.state.HEAD;
+    if (!head?.upstream) {
+      return { commits: [], hasUpstream: false };
+    }
+
+    try {
+      const { GitCliService } = await import("./gitCliService.js");
+      const cli = new GitCliService(repo.rootUri.fsPath);
+      const commits = await cli.getUnpushedCommits();
+      return { commits, hasUpstream: true };
+    } catch {
+      return { commits: [], hasUpstream: true };
     }
   }
 
   private _mapCommit(apiCommit: APICommit, refs: Ref[]): GitCommit {
     const tags = refs
-      .filter(r => r.type === 2 && r.commit === apiCommit.hash)
-      .map(r => r.name ?? '')
+      .filter((r) => r.type === 2 && r.commit === apiCommit.hash)
+      .map((r) => r.name ?? "")
       .filter(Boolean);
 
     const branchRefs = refs
-      .filter(r => (r.type === 0 || r.type === 1) && r.commit === apiCommit.hash)
-      .map(r => r.name ?? '')
+      .filter(
+        (r) => (r.type === 0 || r.type === 1) && r.commit === apiCommit.hash,
+      )
+      .map((r) => r.name ?? "")
       .filter(Boolean);
 
-    const messageParts = apiCommit.message.split('\n');
+    const messageParts = apiCommit.message.split("\n");
 
     return {
       hash: apiCommit.hash,
       shortHash: apiCommit.hash.substring(0, 7),
-      message: messageParts[0] ?? '',
+      message: messageParts[0] ?? "",
       fullMessage: apiCommit.message,
-      authorName: apiCommit.authorName ?? 'Unknown',
-      authorEmail: apiCommit.authorEmail ?? '',
+      authorName: apiCommit.authorName ?? "Unknown",
+      authorEmail: apiCommit.authorEmail ?? "",
       date: apiCommit.authorDate ?? new Date(),
       parents: apiCommit.parents ?? [],
       tags,
@@ -338,20 +424,29 @@ export class GitService implements vscode.Disposable {
   private _mapStatus(status: number): FileChangeStatus {
     // VSCode git extension status enum values
     switch (status) {
-      case 0: return FileChangeStatus.Modified; // INDEX_MODIFIED
-      case 1: return FileChangeStatus.Added;    // INDEX_ADDED
-      case 2: return FileChangeStatus.Deleted;  // INDEX_DELETED
-      case 3: return FileChangeStatus.Renamed;  // INDEX_RENAMED
-      case 4: return FileChangeStatus.Copied;   // INDEX_COPIED
-      case 5: return FileChangeStatus.Modified;  // MODIFIED
-      case 6: return FileChangeStatus.Deleted;   // DELETED
-      case 7: return FileChangeStatus.Untracked; // UNTRACKED
-      default: return FileChangeStatus.Modified;
+      case 0:
+        return FileChangeStatus.Modified; // INDEX_MODIFIED
+      case 1:
+        return FileChangeStatus.Added; // INDEX_ADDED
+      case 2:
+        return FileChangeStatus.Deleted; // INDEX_DELETED
+      case 3:
+        return FileChangeStatus.Renamed; // INDEX_RENAMED
+      case 4:
+        return FileChangeStatus.Copied; // INDEX_COPIED
+      case 5:
+        return FileChangeStatus.Modified; // MODIFIED
+      case 6:
+        return FileChangeStatus.Deleted; // DELETED
+      case 7:
+        return FileChangeStatus.Untracked; // UNTRACKED
+      default:
+        return FileChangeStatus.Modified;
     }
   }
 
   dispose() {
     this._onDidChangeState.dispose();
-    this._disposables.forEach(d => d.dispose());
+    this._disposables.forEach((d) => d.dispose());
   }
 }

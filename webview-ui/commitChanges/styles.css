@@ -664,6 +664,68 @@ button.icon-btn:hover {
   display: none !important;
 }
 
+/* Unpushed Commits Section */
+#unpushed-section {
+  flex-shrink: 0;
+  border-top: 1px solid
+    var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+#unpushed-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(
+    --vscode-sideBarSectionHeader-foreground,
+    var(--vscode-foreground)
+  );
+  background-color: var(--vscode-sideBarSectionHeader-background, transparent);
+  border-bottom: 1px solid var(--vscode-panel-border, transparent);
+  user-select: none;
+  cursor: pointer;
+}
+
+.unpushed-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 28px;
+  font-size: 12px;
+  user-select: none;
+}
+
+.unpushed-row:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.unpushed-hash {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 11px;
+  color: var(--vscode-textLink-foreground);
+  flex-shrink: 0;
+}
+
+.unpushed-msg {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--vscode-foreground);
+}
+
+.unpushed-note {
+  padding: 8px 12px 8px 28px;
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+  font-size: 12px;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 10px;
