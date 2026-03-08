@@ -56,6 +56,20 @@ export class GitCliService {
   }
 
   /**
+   * Push to remote.
+   */
+  public async push(): Promise<void> {
+    await this._exec(["push"]);
+  }
+
+  /**
+   * Force push with lease.
+   */
+  public async forcePush(): Promise<void> {
+    await this._exec(["push", "--force-with-lease"]);
+  }
+
+  /**
    * Check if the working tree is clean (no uncommitted changes).
    */
   public async isWorkingTreeClean(): Promise<boolean> {

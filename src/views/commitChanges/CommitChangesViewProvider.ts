@@ -189,11 +189,18 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
   }
 
   private async _handlePush(): Promise<void> {
+    const repoPath = this._gitService.getRepoPath();
+    if (!repoPath) {
+      vscode.window.showErrorMessage("No Git repository found.");
+      return;
+    }
+
     try {
       await vscode.window.withProgress(
         { location: vscode.ProgressLocation.Notification, title: "Pushing..." },
         async () => {
-          await this._gitService.push();
+          const cli = new GitCliService(repoPath);
+          await cli.push();
         },
       );
       vscode.window.showInformationMessage("Push successful.");
@@ -206,6 +213,12 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
   }
 
   private async _handleForcePush(): Promise<void> {
+    const repoPath = this._gitService.getRepoPath();
+    if (!repoPath) {
+      vscode.window.showErrorMessage("No Git repository found.");
+      return;
+    }
+
     const confirm = await vscode.window.showWarningMessage(
       vscode.l10n.t(
         "Are you sure you want to force push? This can overwrite remote changes.",
@@ -225,7 +238,8 @@ export class CommitChangesViewProvider implements vscode.WebviewViewProvider {
           title: "Force pushing...",
         },
         async () => {
-          await this._gitService.forcePush();
+          const cli = new GitCliService(repoPath);
+          await cli.forcePush();
         },
       );
       vscode.window.showInformationMessage("Force push successful.");
