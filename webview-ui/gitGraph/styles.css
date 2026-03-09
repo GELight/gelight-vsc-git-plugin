@@ -138,6 +138,19 @@ body {
   font-weight: 500;
 }
 
+/* Local-only (unpushed) commit indicator */
+.commit-row.local-only {
+  border-left: 3px solid
+    var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
+}
+
+.commit-row.local-only .commit-message::before {
+  content: "\2191 ";
+  color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
+  font-weight: bold;
+}
+
+/* Ref badge variants */
 .ref-badge {
   background-color: var(
     --vscode-gitDecoration-addedResourceForeground,
@@ -148,6 +161,11 @@ body {
   border-radius: 8px;
   font-size: 11px;
   font-weight: 500;
+}
+
+.ref-badge.ref-remote {
+  background-color: var(--vscode-charts-purple, #b180d7);
+  color: var(--vscode-editor-background);
 }
 
 /* Author and date */

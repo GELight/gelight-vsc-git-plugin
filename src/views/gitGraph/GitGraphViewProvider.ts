@@ -68,9 +68,23 @@ export class GitGraphViewProvider implements vscode.WebviewViewProvider {
     const commits = await this._gitService.getLog();
     const graphRows = calculateGraphLayout(commits);
 
+    // Determine which commits are local-only (not yet pushed to remote)
+    let unpushedHashes: string[] = [];
+    try {
+      const repoPath = this._gitService.getRepoPath();
+      if (repoPath) {
+        const cli = new GitCliService(repoPath);
+        const unpushed = await cli.getUnpushedCommits();
+        unpushedHashes = unpushed.map((c) => c.hash);
+      }
+    } catch {
+      // If upstream is not set, treat no commits as unpushed
+    }
+
     this._view.webview.postMessage({
       type: "updateCommits",
       commits: graphRows,
+      unpushedHashes,
     });
   }
 

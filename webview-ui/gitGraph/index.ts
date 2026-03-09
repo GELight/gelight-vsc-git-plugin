@@ -58,6 +58,7 @@ let selectedHashes: Set<string> = new Set();
 let strings: Strings = {};
 let detailsCommit: GitCommit | null = null;
 let detailsFiles: GitFileChange[] = [];
+let unpushedHashes: Set<string> = new Set();
 
 // --- Constants ---
 const ROW_HEIGHT = 32;
@@ -79,6 +80,7 @@ window.addEventListener("message", (event) => {
   switch (msg.type) {
     case "updateCommits":
       allRows = msg.commits;
+      unpushedHashes = new Set(msg.unpushedHashes ?? []);
       applyFilter();
       break;
     case "updateCommitDetails":
@@ -349,6 +351,9 @@ function renderCommitList(): void {
     if (selectedHashes.has(row.commit.hash)) {
       rowEl.classList.add("selected");
     }
+    if (unpushedHashes.has(row.commit.hash)) {
+      rowEl.classList.add("local-only");
+    }
     rowEl.style.height = `${ROW_HEIGHT}px`;
     rowEl.style.paddingLeft = `${graphWidth + 8}px`;
 
@@ -412,10 +417,14 @@ function renderCommitList(): void {
       tagsContainer.appendChild(tagEl);
     });
 
-    // Refs (branch names)
+    // Refs (branch names) — distinguish local vs remote
     row.commit.refs.forEach((ref) => {
       const refEl = document.createElement("span");
-      refEl.className = "ref-badge";
+      const isRemote =
+        ref.startsWith("origin/") ||
+        ref.startsWith("upstream/") ||
+        ref.includes("/");
+      refEl.className = isRemote ? "ref-badge ref-remote" : "ref-badge";
       refEl.textContent = ref;
       tagsContainer.appendChild(refEl);
     });
