@@ -439,7 +439,7 @@ function renderCommitList(): void {
 
     // Click handler for selection
     rowEl.addEventListener("click", (e) => {
-      handleCommitClick(row.commit.hash, e.shiftKey);
+      handleCommitClick(row.commit.hash, e.shiftKey, e.ctrlKey || e.metaKey);
     });
 
     listWrapper.appendChild(rowEl);
@@ -451,9 +451,13 @@ function renderCommitList(): void {
 // --- Selection ---
 let lastClickedHash: string | null = null;
 
-function handleCommitClick(hash: string, shiftKey: boolean): void {
+function handleCommitClick(
+  hash: string,
+  shiftKey: boolean,
+  ctrlKey: boolean,
+): void {
   if (shiftKey && lastClickedHash) {
-    // Range select
+    // SHIFT+Click: Range select from anchor (lastClickedHash) to clicked commit
     const startIdx = filteredRows.findIndex(
       (r) => r.commit.hash === lastClickedHash,
     );
@@ -461,20 +465,38 @@ function handleCommitClick(hash: string, shiftKey: boolean): void {
     if (startIdx !== -1 && endIdx !== -1) {
       const from = Math.min(startIdx, endIdx);
       const to = Math.max(startIdx, endIdx);
-      selectedHashes.clear();
+      // CTRL+SHIFT: add range to existing selection; SHIFT alone: replace selection
+      if (!ctrlKey) {
+        selectedHashes.clear();
+      }
       for (let i = from; i <= to; i++) {
         selectedHashes.add(filteredRows[i].commit.hash);
       }
     }
+    // Anchor (lastClickedHash) stays unchanged on shift-click
+  } else if (ctrlKey) {
+    // CTRL+Click: Toggle individual commit in/out of selection
+    if (selectedHashes.has(hash)) {
+      selectedHashes.delete(hash);
+    } else {
+      selectedHashes.add(hash);
+    }
+    lastClickedHash = hash;
   } else {
-    // Single select
+    // Normal click: clear and select single commit
     selectedHashes.clear();
     selectedHashes.add(hash);
-    // Request details for this commit
-    vscode.postMessage({ type: "requestCommitDetails", hash });
+    lastClickedHash = hash;
   }
 
-  lastClickedHash = hash;
+  // Show details for single selection, hide otherwise
+  if (selectedHashes.size === 1) {
+    const singleHash = Array.from(selectedHashes)[0];
+    vscode.postMessage({ type: "requestCommitDetails", hash: singleHash });
+  } else if (selectedHashes.size === 0) {
+    hideDetails();
+  }
+
   renderCommitList();
   updateContextMenu();
 }

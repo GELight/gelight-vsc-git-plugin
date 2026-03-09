@@ -87,6 +87,9 @@ body {
 .commit-row.selected {
   background-color: var(--vscode-list-activeSelectionBackground);
   color: var(--vscode-list-activeSelectionForeground);
+  box-shadow: inset 3px 0 0 var(--vscode-focusBorder, #007acc);
+  outline: 1px solid var(--vscode-focusBorder, #007acc);
+  outline-offset: -1px;
 }
 
 /* Commit hash */
