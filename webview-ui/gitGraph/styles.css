@@ -139,15 +139,8 @@ body {
 }
 
 /* Local-only (unpushed) commit indicator */
-.commit-row.local-only {
-  border-left: 3px solid
-    var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
-}
-
-.commit-row.local-only .commit-message::before {
-  content: "\2191 ";
+.commit-row.local-only .commit-message {
   color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
-  font-weight: bold;
 }
 
 /* Ref badge variants */
